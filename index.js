@@ -36,6 +36,12 @@ var tbControls = new THREE.TrackballControls(camera, renderer.domElement);
 var d3ForceLayout = d3.forceSimulation()
             .force('link', d3.forceLink())
             .force('charge', d3.forceManyBody())
+/*
+            .force('gravity', d3.forceY().y(-1000).strength(function(x) {
+				console.log("Y", graphData.nodes[x["id"]]);
+				return 0.8;
+			}))
+			*/
             .force('center', d3.forceCenter())
             .stop();
 
@@ -57,7 +63,7 @@ var height = window.innerHeight;
 var nodeRelSize = 4;
 var nodeResolution = 8;
 var warmupTicks = 0;
-var cooldownTicks = 10000;
+var cooldownTicks = 1000;
 var cooldownTime = 15000; //ms
 
 var update = function () {
@@ -113,7 +119,7 @@ var update = function () {
 			lineMaterials[color] = new THREE.LineBasicMaterial({
 				color: /*colorStr2Hex(color || '#f0f0f0')*/ '#f0f0f0',
 				transparent: true,
-				opacity: 0.2,
+				opacity: 0.5,
 			});
 		}
 
