@@ -1,6 +1,11 @@
+var graph = require("ngraph.graph");
+var forcelayout3d = require('ngraph.forcelayout3d');
+const ngraph = { graph, forcelayout3d };
+
 // date
 // Random tree
 const N = 300;
+let engine = 'ngraph'; // 'd3' or 'ngraph'
 var graphData = {
 	nodes: [...Array(N).keys()].map(i => ({ id: i })),
 	links: [...Array(N).keys()]
@@ -33,17 +38,12 @@ camera.far = 20000;
 
 var tbControls = new THREE.TrackballControls(camera, renderer.domElement);
 
-var d3ForceLayout = d3.forceSimulation()
-            .force('link', d3.forceLink())
-            .force('charge', d3.forceManyBody())
-/*
-            .force('gravity', d3.forceY().y(-1000).strength(function(x) {
-				console.log("Y", graphData.nodes[x["id"]]);
-				return 0.8;
-			}))
-			*/
-            .force('center', d3.forceCenter())
-            .stop();
+// Add D3 force-directed layout
+d3ForceLayout = d3.forceSimulation()
+	.force('link', d3.forceLink())
+	.force('charge', d3.forceManyBody())
+	.force('center', d3.forceCenter())
+	.stop();
 
 var onFrame = null;
 
@@ -141,19 +141,29 @@ var update = function () {
 	}
 
 	// feed to force engine
+	const isD3Sim = engine !== 'ngraph';
 	let layout;
-	(layout = d3ForceLayout)
-		.stop()
-		.alpha(1)// re-heat the simulation
-		.numDimensions(3)
-		.nodes(graphData.nodes)
-		.force('link')
+	if (engine === 'd3') {
+		(layout = d3ForceLayout)
+			.stop()
+			.alpha(1)// re-heat the simulation
+			.numDimensions(3)
+			.nodes(graphData.nodes)
+			.force('link')
 			.id(d => d["id"])
 			.links(graphData.links);
+	} else {
+		const graph = ngraph.graph();
+		graphData.nodes.forEach(node => { graph.addNode(node["id"]); });
+		graphData.links.forEach(link => { graph.addLink(link.source, link.target); });
+		layout = ngraph['forcelayout3d'](graph);
+		layout.graph = graph; // Attach graph reference to layout
+	}
+
 
 	for (let i = 0; i < warmupTicks; i++) {
-		layout['tick']();
-	} // Initial ticks before starting to render
+		layout[isD3Sim?'tick':'step']();
+	}
 
 	let cntTicks = 0;
 	const startTickTime = new Date();
@@ -172,14 +182,14 @@ var update = function () {
 			onFrame = null; // Stop ticking graph
 		}
 
-		layout['tick'](); // Tick it
+		layout[isD3Sim?'tick':'step'](); // Tick it
 
 		// Update nodes position
 		graphData.nodes.forEach(node => {
 			const sphere = node.__sphere;
 			if (!sphere) return;
 
-			const pos = node;
+			const pos = isD3Sim ? node : layout.getNodePosition(node["id"]);
 
 			sphere.position.x = pos.x;
 			sphere.position.y = pos.y || 0;
@@ -191,9 +201,11 @@ var update = function () {
 			const line = link.__line;
 			if (!line) return;
 
-			const pos = link,
-				start = pos['source'],
-				end = pos['target'],
+			const pos = isD3Sim
+				? link
+				: layout.getLinkPosition(layout.graph.getLink(link.source, link.target).id),
+				start = pos[isD3Sim ? 'source' : 'from'],
+				end = pos[isD3Sim ? 'target' : 'to'],
 				linePos = line.geometry.attributes.position;
 
 			linePos.array[0] = start.x;
