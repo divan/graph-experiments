@@ -1,12 +1,3 @@
-var graph = require("ngraph.graph");
-var forcelayout3d = require('ngraph.forcelayout3d');
-const ngraph = { graph, forcelayout3d };
-
-// date
-// Random tree
-const N = 300;
-let engine = 'ngraph'; // 'd3' or 'ngraph'
-
 // WebGL
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -29,13 +20,6 @@ camera.far = 20000;
 
 var tbControls = new THREE.TrackballControls(camera, renderer.domElement);
 
-// Add D3 force-directed layout
-d3ForceLayout = d3.forceSimulation()
-	.force('link', d3.forceLink())
-	.force('charge', d3.forceManyBody())
-	.force('center', d3.forceCenter())
-	.stop();
-
 var onFrame = null;
 
 var animate = function () {
@@ -51,7 +35,7 @@ var animate = function () {
 
 var width = window.innerWidth;
 var height = window.innerHeight;
-var nodeRelSize = 4;
+var nodeRelSize = 1;
 var nodeResolution = 8;
 var warmupTicks = 0;
 var cooldownTicks = 1000;
@@ -100,6 +84,7 @@ var update = function () {
 		sphere.__data = node; // Attach node data
 
 		graphScene.add(node.__sphere = sphere);
+		sphere.position.set(Math.random() * 1000, Math.random() * 1000, Math.random() * 1000);
 	});
 
 	const linkColorAccessor = accessorFn("color");
@@ -131,35 +116,6 @@ var update = function () {
 		camera.position.z = Math.cbrt(graphData.nodes.length) * 150;
 	}
 
-	// feed to force engine
-	const isD3Sim = engine !== 'ngraph';
-	let layout;
-	if (engine === 'd3') {
-		(layout = d3ForceLayout)
-			.stop()
-			.alpha(1)// re-heat the simulation
-			.numDimensions(3)
-			.nodes(graphData.nodes)
-			.force('link')
-			.id(d => d["id"])
-			.links(graphData.links);
-	} else {
-		const graph = ngraph.graph();
-		graphData.nodes.forEach(node => { graph.addNode(node["id"]); });
-		graphData.links.forEach(link => { graph.addLink(link.source, link.target); });
-		layout = ngraph['forcelayout3d'](graph);
-		layout.graph = graph; // Attach graph reference to layout
-	}
-
-
-	for (let i = 0; i < warmupTicks; i++) {
-		layout[isD3Sim?'tick':'step']();
-	}
-
-	let cntTicks = 0;
-	const startTickTime = new Date();
-	onFrame = layoutTick;
-
 	function resizeCanvas() {
 		if (width && height) {
 			renderer.setSize(width, height);
@@ -167,50 +123,6 @@ var update = function () {
 			camera.updateProjectionMatrix();
 		}
 	}
-
-	function layoutTick() {
-		if (cntTicks++ > cooldownTicks || (new Date()) - startTickTime > cooldownTime) {
-			onFrame = null; // Stop ticking graph
-		}
-
-		layout[isD3Sim?'tick':'step'](); // Tick it
-
-		// Update nodes position
-		graphData.nodes.forEach(node => {
-			const sphere = node.__sphere;
-			if (!sphere) return;
-
-			const pos = isD3Sim ? node : layout.getNodePosition(node["id"]);
-
-			sphere.position.x = pos.x;
-			sphere.position.y = pos.y || 0;
-			sphere.position.z = pos.z || 0;
-		});
-
-		// Update links position
-		graphData.links.forEach(link => {
-			const line = link.__line;
-			if (!line) return;
-
-			const pos = isD3Sim
-				? link
-				: layout.getLinkPosition(layout.graph.getLink(link.source, link.target).id),
-				start = pos[isD3Sim ? 'source' : 'from'],
-				end = pos[isD3Sim ? 'target' : 'to'],
-				linePos = line.geometry.attributes.position;
-
-			linePos.array[0] = start.x;
-			linePos.array[1] = start.y || 0;
-			linePos.array[2] = start.z || 0;
-			linePos.array[3] = end.x;
-			linePos.array[4] = end.y || 0;
-			linePos.array[5] = end.z || 0;
-
-			linePos.needsUpdate = true;
-			line.geometry.computeBoundingSphere();
-		});
-	}
-
 };
 
 update();
