@@ -7,15 +7,6 @@ const ngraph = { graph, forcelayout3d };
 // Random tree
 const N = 300;
 let engine = 'ngraph'; // 'd3' or 'ngraph'
-var graphData = {
-	nodes: [...Array(N).keys()].map(i => ({ id: i })),
-	links: [...Array(N).keys()]
-	.filter(id => id)
-	.map(id => ({
-		source: id,
-		target: Math.round(Math.random() * (id-1))
-	}))
-};
 
 // WebGL
 var renderer = new THREE.WebGLRenderer();

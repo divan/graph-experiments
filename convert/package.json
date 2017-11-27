@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "ngraph.graph": "0.0.14",
-    "ngraph.offline.layout": "^1.1.1"
+    "ngraph.offline.layout": "^1.1.1",
+    "ngraph.tobinary": "^1.0.1"
   }
 }
