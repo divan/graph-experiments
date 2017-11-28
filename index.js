@@ -3,6 +3,36 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
+function loadData() {
+	console.log("Loading positions...");
+
+	var xhr = new XMLHttpRequest();
+	xhr.open("GET", 'convert/data/positions.bin', true);
+	xhr.responseType = "arraybuffer";
+
+	xhr.onload = function (res) {
+		var arrayBuffer = res.currentTarget.response;
+		if (arrayBuffer) {
+			setPositions(arrayBuffer)
+		}
+	};
+	xhr.send(null);
+}
+
+var positions = Array();
+
+function setPositions(buffer) {
+	var array = new Int32Array(buffer);
+	for (var i = 0; i < array.byteLength/4; i = i+3) {
+		console.log(i, {x: array[i], y: array[i+1], z: array[i+2]});
+		positions.push({x: array[i], y: array[i+1], z: array[i+2]});
+	}
+
+	update();
+}
+
+loadData();
+
 // Setup scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000011);
@@ -63,6 +93,7 @@ var update = function () {
 	const colorAccessor = accessorFn("group");
 	let sphereGeometries = {}; // indexed by node value
 	let sphereMaterials = {}; // indexed by color
+	var idx = 0;
 	graphData.nodes.forEach(node => {
 		const val = valAccessor(node) || 1;
 		if (!sphereGeometries.hasOwnProperty(val)) {
@@ -84,7 +115,10 @@ var update = function () {
 		sphere.__data = node; // Attach node data
 
 		graphScene.add(node.__sphere = sphere);
-		sphere.position.set(Math.random() * 1000, Math.random() * 1000, Math.random() * 1000);
+		if (positions[idx] !== undefined) {
+			sphere.position.set(positions[idx].x, positions[idx].y, positions[idx].z);
+		}
+		idx++;
 	});
 
 	const linkColorAccessor = accessorFn("color");
@@ -125,5 +159,5 @@ var update = function () {
 	}
 };
 
-update();
+//update();
 animate();
