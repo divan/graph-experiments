@@ -3,11 +3,13 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
+var positions = Array();
+
 function loadData() {
 	console.log("Loading positions...");
 
 	var xhr = new XMLHttpRequest();
-	xhr.open("GET", 'convert/data/positions.bin', true);
+	xhr.open("GET", 'data/data/positions.bin', true);
 	xhr.responseType = "arraybuffer";
 
 	xhr.onload = function (res) {
@@ -18,8 +20,6 @@ function loadData() {
 	};
 	xhr.send(null);
 }
-
-var positions = Array();
 
 function setPositions(buffer) {
 	var array = new Int32Array(buffer);
@@ -65,7 +65,7 @@ var animate = function () {
 
 var width = window.innerWidth;
 var height = window.innerHeight;
-var nodeRelSize = 1;
+var nodeRelSize = 4;
 var nodeResolution = 8;
 var warmupTicks = 0;
 var cooldownTicks = 1000;
