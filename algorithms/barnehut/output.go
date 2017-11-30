@@ -5,11 +5,26 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 // NgraphBinaryOutput stores graph data as binary files, compatible
 // with ngraph library: positions.bin, links.bin, labels.json and meta.json
 type NgraphBinaryOutput struct {
+	dir string
+}
+
+func NewNgraphBinaryOutput(dir string) *NgraphBinaryOutput {
+	fs, err := os.Stat(dir)
+	if err != nil {
+		log.Fatalf("Failed to prepare output dir: %v", err)
+	}
+	if !fs.IsDir() {
+		log.Fatalf("'%s' is not a dir, aborting...", dir)
+	}
+	return &NgraphBinaryOutput{
+		dir: dir,
+	}
 }
 
 func (o *NgraphBinaryOutput) Save(l Layout, data *GraphData) error {
@@ -32,7 +47,8 @@ func (o *NgraphBinaryOutput) Save(l Layout, data *GraphData) error {
 // following way: XYZXYZXYZ... where X, Y and Z are coordinates
 // for each node in signed 32 bit integer Little Endian format.
 func (o *NgraphBinaryOutput) WritePositionsBin(l Layout) error {
-	fd, err := os.Create("positions.bin")
+	file := filepath.Join(o.dir, "positions.bin")
+	fd, err := os.Create(file)
 	if err != nil {
 		return err
 	}
@@ -57,7 +73,8 @@ func (o *NgraphBinaryOutput) WritePositionsBin(l Layout) error {
 // following way: Sidx,L1idx,L2idx,S2idx,L1idx... where SNidx - is the
 // start node index, and LNidx - is the other link end node index.
 func (o *NgraphBinaryOutput) WriteLinksBin(data *GraphData) error {
-	fd, err := os.Create("links.bin")
+	file := filepath.Join(o.dir, "positions.bin")
+	fd, err := os.Create(file)
 	if err != nil {
 		return err
 	}

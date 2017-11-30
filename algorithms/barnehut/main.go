@@ -14,7 +14,7 @@ func main() {
 	layout := &Layout3D{}
 	layout.InitCoordinates(data.Nodes)
 
-	out := &NgraphBinaryOutput{}
+	out := NewNgraphBinaryOutput("./data")
 	err = out.Save(layout, data)
 	if err != nil {
 		log.Fatal(err)
