@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"io"
 	"log"
 	"os"
@@ -38,7 +39,7 @@ func (o *NgraphBinaryOutput) Save(l Layout, data *GraphData) error {
 		return err
 	}
 
-	return nil
+	return o.WriteLabels(data)
 }
 
 // WritePositionsBin writes position data into 'positions.bin' file in the
@@ -95,6 +96,23 @@ func (o *NgraphBinaryOutput) WriteLinksBin(data *GraphData) error {
 		}
 	}
 	return nil
+}
+
+// WriteLabels writes node ids (labels) information into `labels.json` file
+// as an array of strings.
+func (o *NgraphBinaryOutput) WriteLabels(data *GraphData) error {
+	file := filepath.Join(o.dir, "labels.json")
+	fd, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+	defer fd.Close()
+
+	var labels []string
+	for i, _ := range data.Nodes {
+		labels = append(labels, data.Nodes[i].ID)
+	}
+	return json.NewEncoder(fd).Encode(labels)
 }
 
 type Int32LEWriter struct {
