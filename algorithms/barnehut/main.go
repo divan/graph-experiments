@@ -1,19 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"log"
 )
 
 func main() {
-	g, err := NewGraphDataFromJSON("data_small.json")
+	data, err := NewGraphDataFromJSON("data_small.json")
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Loaded graph: %d nodes, %d links\n", len(g.Nodes), len(g.Links))
+	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes), len(data.Links))
 
-	l := &Layout3D{}
-	nodes := l.InitCoordinates(g.Nodes)
+	layout := &Layout3D{}
+	layout.InitCoordinates(data.Nodes)
 
-	fmt.Println("Nodes:", nodes)
+	out := &NgraphBinaryOutput{}
+	err = out.Save(layout, data)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

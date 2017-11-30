@@ -74,9 +74,9 @@ function render(data) {
 
   var renderer = pixel(graph, {
     node(node) {
-        var props = { size: 30, color: "0xaaaaaa"};
+        var props = { size: 5, color: "0xaaaaaa"};
         if (node.data.group === "coach") {
-            props.size = 35;
+            props.size = 5;
         }
 
         if (node.data.color !== undefined) {
@@ -133,6 +133,9 @@ function initGraphFromLinksAndLabels(links, labels, graphData) {
       var toNode = link - 1;
       var fromId = labels[srcIndex];
       var toId = labels[toNode];
+      if (toId === undefined) {
+          return
+      }
       graph.addLink(fromId, toId);
     }
   }

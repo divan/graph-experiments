@@ -8,6 +8,8 @@ import (
 type GraphData struct {
 	Nodes []*NodeData `json:"nodes"`
 	Links []*LinkData `json:"links"`
+
+	nodeHasLinks map[string]bool
 }
 
 type NodeData struct {
@@ -37,5 +39,14 @@ func NewGraphDataFromJSON(file string) (*GraphData, error) {
 		return nil, err
 	}
 
+	g.nodeHasLinks = make(map[string]bool)
+	for _, link := range g.Links {
+		g.nodeHasLinks[link.Source] = true
+	}
+
 	return g, err
+}
+
+func (g *GraphData) NodeHasLinks(nodeID string) bool {
+	return g.nodeHasLinks[nodeID]
 }
