@@ -5,10 +5,10 @@ var ajax = require('./ajax.js');
 var pixel = require('ngraph.pixel');
 
 Promise.all([
-  ajax('data/data/positions.bin', { responseType: 'arraybuffer' }).then(toInt32Array),
-  ajax('data/data/links.bin', { responseType: 'arraybuffer' }).then(toInt32Array),
-  ajax('data/data/labels.json').then(toJson),
-  ajax('data/data.json').then(toJson)
+  ajax('data/positions.bin', { responseType: 'arraybuffer' }).then(toInt32Array),
+  ajax('data/links.bin', { responseType: 'arraybuffer' }).then(toInt32Array),
+  ajax('data/labels.json').then(toJson),
+  ajax('data.json').then(toJson)
 ]).then(render);
 
 function toInt32Array(oReq) {

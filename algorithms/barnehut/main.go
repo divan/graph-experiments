@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	data, err := NewGraphDataFromJSON("data_small.json")
+	data, err := NewGraphDataFromJSON("static/data.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -14,8 +14,13 @@ func main() {
 	layout := &Layout3D{}
 	layout.InitCoordinates(data.Nodes)
 
-	out := NewNgraphBinaryOutput("./data")
+	out := NewNgraphBinaryOutput("./static/data")
 	err = out.Save(layout, data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = startWeb()
 	if err != nil {
 		log.Fatal(err)
 	}

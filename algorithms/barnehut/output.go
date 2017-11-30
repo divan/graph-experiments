@@ -32,13 +32,11 @@ func (o *NgraphBinaryOutput) Save(l Layout, data *GraphData) error {
 	if err != nil {
 		return err
 	}
-	log.Println("Positions written into ./positions.bin")
 
 	err = o.WriteLinksBin(data)
 	if err != nil {
 		return err
 	}
-	log.Println("Links written into ./links.bin")
 
 	return nil
 }
@@ -73,7 +71,7 @@ func (o *NgraphBinaryOutput) WritePositionsBin(l Layout) error {
 // following way: Sidx,L1idx,L2idx,S2idx,L1idx... where SNidx - is the
 // start node index, and LNidx - is the other link end node index.
 func (o *NgraphBinaryOutput) WriteLinksBin(data *GraphData) error {
-	file := filepath.Join(o.dir, "positions.bin")
+	file := filepath.Join(o.dir, "links.bin")
 	fd, err := os.Create(file)
 	if err != nil {
 		return err
