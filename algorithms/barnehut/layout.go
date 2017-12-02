@@ -8,13 +8,11 @@ import (
 )
 
 type Node struct {
-	X         int32
-	Y         int32
-	Z         int32
-	Mass      int32
-	VelocityX float64
-	VelocityY float64
-	VelocityZ float64
+	X    int32
+	Y    int32
+	Z    int32
+	Mass int32
+	ID   string
 }
 
 func (n *Node) String() string {
@@ -22,20 +20,21 @@ func (n *Node) String() string {
 }
 
 type Layout interface {
-	Init(data []*NodeData)
+	Init(data *GraphData)
 	Nodes() []*Node
 	Calculate(iterations int)
 }
 
 type Layout3D struct {
 	nodes []*Node
+	links []*LinkData
 }
 
 // Init initializes layout with nodes data. It assigns
 // semi-random positions to nodes to facilitate further simulation.
-func (l *Layout3D) Init(data []*NodeData) {
-	nodes := make([]*Node, 0, len(data))
-	for i, _ := range data {
+func (l *Layout3D) Init(data *GraphData) {
+	nodes := make([]*Node, 0, len(data.Nodes))
+	for i, _ := range data.Nodes {
 		radius := 10 * math.Cbrt(float64(i))
 		rollAngle := float64(float64(i) * math.Pi * (3 - math.Sqrt(5))) // golden angle
 		yawAngle := float64(float64(i) * math.Pi / 24)                  // sequential (divan: wut?)
@@ -45,14 +44,20 @@ func (l *Layout3D) Init(data []*NodeData) {
 			Y:    int32(radius * math.Sin(rollAngle)),
 			Z:    int32(radius * math.Sin(yawAngle)),
 			Mass: 1,
+			ID:   data.Nodes[i].ID,
 		}
 		nodes = append(nodes, node)
 	}
 	l.nodes = nodes
+	l.links = data.Links
 }
 
 func (l *Layout3D) Nodes() []*Node {
 	return l.nodes
+}
+
+func (l *Layout3D) Links() []*LinkData {
+	return l.links
 }
 
 func (l *Layout3D) Calculate(n int) {
@@ -70,10 +75,19 @@ func (f force) String() string {
 }
 
 // Add adds new force to f.
-func (f *force) Add(f1 *force) {
+func (f *force) Add(f1 *force) *force {
 	f.dx += f1.dx
 	f.dy += f1.dy
 	f.dz += f1.dz
+	return f
+}
+
+// Sub substracts new force from f.
+func (f *force) Sub(f1 *force) *force {
+	f.dx -= f1.dx
+	f.dy -= f1.dy
+	f.dz -= f1.dz
+	return f
 }
 
 func (l *Layout3D) updatePositions() {
@@ -84,15 +98,67 @@ func (l *Layout3D) updatePositions() {
 		ot.Insert(p)
 	}
 
-	var forces []force
-	for i, _ := range l.Nodes() {
-		// calculate force for i-th node
-		var f force
+	forces := make([]*force, len(l.nodes))
+	// anti-gravity repelling
+	for i := range l.nodes {
+		f := &force{}
 		f.dx, f.dy, f.dz = ot.CalcForce(i)
-		forces = append(forces, f)
+		forces[i] = f
+	}
+
+	// link springs
+	findNodeIdx := func(id string) int {
+		for i := range l.nodes {
+			if l.nodes[i].ID == id {
+				return i
+			}
+		}
+		fmt.Println("Can't find node for id:", id)
+		return -1
+	}
+	for _, link := range l.links {
+		fromIdx := findNodeIdx(link.Source)
+		if fromIdx == -1 {
+			continue
+		}
+		toIdx := findNodeIdx(link.Target)
+		if toIdx == -1 {
+			continue
+		}
+
+		f1, f2 := forces[fromIdx], forces[toIdx]
+		f := springForce(l.nodes[fromIdx], l.nodes[toIdx])
+		forces[fromIdx] = f1.Add(f)
+		forces[toIdx] = f2.Sub(f)
 	}
 
 	l.integrate(forces)
+}
+
+func springForce(from, to *Node) *force {
+	dx := float64(to.X - from.X)
+	dy := float64(to.Y - from.Y)
+	dz := float64(to.Z - from.Z)
+	r := math.Sqrt(dx*dx + dy*dy + dz*dz)
+
+	if r == 0 {
+		r = 10
+	}
+
+	const (
+		length = 20
+		coeff  = 0.0008
+		weight = 1
+	)
+
+	d := r - length
+	c := coeff * d / r * weight
+
+	return &force{
+		dx: c * dx,
+		dy: c * dy,
+		dz: c * dz,
+	}
 }
 
 func newPointFromNode(idx int, n *Node) *octree.Point {
@@ -107,29 +173,29 @@ func newPointFromNode(idx int, n *Node) *octree.Point {
 
 // integrate performs forces integration using Euler numerical
 // integration method.
-func (l *Layout3D) integrate(forces []force) {
+func (l *Layout3D) integrate(forces []*force) {
 	const timeStep = float64(20) // FIXME: 20 what?
-	for i := 0; i < len(l.Nodes()); i++ {
-		body := l.Nodes()[i]
+	for i := 0; i < len(l.nodes); i++ {
+		body := l.nodes[i]
 		coeff := timeStep / float64(body.Mass)
 
-		body.VelocityX += coeff * forces[i].dx
-		body.VelocityY += coeff * forces[i].dy
-		body.VelocityZ += coeff * forces[i].dz
-		v := math.Sqrt(body.VelocityX*body.VelocityX + body.VelocityY*body.VelocityY + body.VelocityZ*body.VelocityZ)
+		vx := coeff * forces[i].dx
+		vy := coeff * forces[i].dy
+		vz := coeff * forces[i].dz
+		v := math.Sqrt(vx*vx + vy*vy + vz*vz)
 
 		if v > 1 {
-			body.VelocityX = body.VelocityX / v
-			body.VelocityY = body.VelocityY / v
-			body.VelocityZ = body.VelocityZ / v
+			vx = vx / v
+			vy = vy / v
+			vz = vz / v
 		}
 
-		dx := timeStep * body.VelocityX
-		dy := timeStep * body.VelocityY
-		dz := timeStep * body.VelocityZ
+		dx := timeStep * vx
+		dy := timeStep * vy
+		dz := timeStep * vz
 
-		l.Nodes()[i].X += int32(dx)
-		l.Nodes()[i].Y += int32(dy)
-		l.Nodes()[i].Z += int32(dz)
+		l.nodes[i].X += int32(dx)
+		l.nodes[i].Y += int32(dy)
+		l.nodes[i].Z += int32(dz)
 	}
 }

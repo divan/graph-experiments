@@ -8,7 +8,7 @@ import (
 func main() {
 	var (
 		webOnly    = flag.Bool("web", false, "Don't generate data, just serve web page")
-		iterations = flag.Int("iterations", 10, "Number of iterations for force-directed layout simulation")
+		iterations = flag.Int("iterations", 1500, "Number of iterations for force-directed layout simulation")
 	)
 	flag.Parse()
 
@@ -21,7 +21,7 @@ func main() {
 
 		layout := &Layout3D{}
 		log.Printf("Initializing layout...")
-		layout.Init(data.Nodes)
+		layout.Init(data)
 		log.Printf("Calculating layout...")
 		layout.Calculate(*iterations)
 
