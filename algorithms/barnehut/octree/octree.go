@@ -1,9 +1,13 @@
 package octree
 
+// Octree represents Octree data structure.
+// See https://en.wikipedia.org/wiki/Octree for details.
 type Octree struct {
 	root octant
 }
 
+// Point represents 3D point with mass, that'd be used
+// to calculate center of the mass of octants.
 type Point struct {
 	X, Y, Z int32
 	Mass    int32
@@ -22,10 +26,12 @@ type node struct {
 	massCenter *Point
 }
 
+// Center returns center of the mass of the node. Implements octant interface.
 func (n *node) Center() *Point {
 	return n.massCenter
 }
 
+// make sure node satisfies octant interface at compile time.
 var _ = octant(&node{})
 
 // leaf represents octant without children, "external node". Satisfies octant.
@@ -33,10 +39,12 @@ type leaf struct {
 	point *Point
 }
 
+// Center returns point of the leaf. Implements octant interface.
 func (l *leaf) Center() *Point {
 	return l.point
 }
 
+// make sure leaf satisfies octant interface at compile time.
 var _ = octant(&leaf{})
 
 // New inits new octree.
@@ -62,6 +70,7 @@ func newLeaf(p *Point) *leaf {
 	}
 }
 
+// Insert adds new Point into the Octree data structure.
 func (o *Octree) Insert(p *Point) {
 	if o.root == nil {
 		o.root = newLeaf(p)
@@ -71,6 +80,8 @@ func (o *Octree) Insert(p *Point) {
 	o.root = o.root.Insert(p)
 }
 
+// Insert inserts new Point into existing node and returns
+// updated node. Implements octant interface.
 func (n *node) Insert(p *Point) octant {
 	idx := findOctantIdx(n, p)
 	child := n.leafs[idx]
@@ -79,6 +90,8 @@ func (n *node) Insert(p *Point) octant {
 	return n
 }
 
+// Insert inserts new Point into existing leaf and returns updated
+// node, which may be transformed into node. Implements octant interface.
 func (l *leaf) Insert(p *Point) octant {
 	if l == nil || l.Center() == nil {
 		l = newLeaf(p)
@@ -97,9 +110,11 @@ func (l *leaf) Insert(p *Point) octant {
 	return node
 }
 
+// update center of the mass of the given node, calculating it from
+// leaf centers of the mass.
 func (n *node) updateMassCenter() {
 	var (
-		p          *Point = &Point{}
+		p          = &Point{}
 		xm, ym, zm int64
 	)
 
