@@ -109,29 +109,11 @@ func (l *Layout3D) updatePositions() {
 	}
 
 	// link springs
-	findNodeIdx := func(id string) int {
-		for i := range l.nodes {
-			if l.nodes[i].ID == id {
-				return i
-			}
-		}
-		fmt.Println("Can't find node for id:", id)
-		return -1
-	}
 	for _, link := range l.links {
-		fromIdx := findNodeIdx(link.Source)
-		if fromIdx == -1 {
-			continue
-		}
-		toIdx := findNodeIdx(link.Target)
-		if toIdx == -1 {
-			continue
-		}
-
-		f1, f2 := forces[fromIdx], forces[toIdx]
-		f := springForce(l.nodes[fromIdx], l.nodes[toIdx])
-		forces[fromIdx] = f1.Add(f)
-		forces[toIdx] = f2.Sub(f)
+		f1, f2 := forces[link.FromIdx], forces[link.ToIdx]
+		f := springForce(l.nodes[link.FromIdx], l.nodes[link.ToIdx])
+		forces[link.FromIdx] = f1.Add(f)
+		forces[link.ToIdx] = f2.Sub(f)
 	}
 
 	l.integrate(forces)

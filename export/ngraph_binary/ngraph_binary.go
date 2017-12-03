@@ -3,12 +3,13 @@ package ngraph_binary
 import (
 	"encoding/binary"
 	"encoding/json"
-	"github.com/divan/graph-experiments/graph"
-	"github.com/divan/graph-experiments/layout"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/divan/graph-experiments/graph"
+	"github.com/divan/graph-experiments/layout"
 )
 
 // NgraphBinaryOutput stores graph data as binary files, compatible
@@ -88,9 +89,9 @@ func (o *NgraphBinaryOutput) WriteLinksBin(data *graph.Data) error {
 		}
 
 		iw.Write(int32(-(i + 1)))
-		for j, link := range data.Links {
+		for _, link := range data.Links {
 			if link.Source == node.ID {
-				iw.Write(int32(j + 1))
+				iw.Write(int32(link.ToIdx + 1))
 			}
 		}
 		if iw.err != nil {

@@ -12,7 +12,7 @@ func main() {
 	iterations := flag.Int("iterations", 1, "Number of iterations for force-directed layout simulation")
 	flag.Parse()
 
-	data, err := graph.NewDataFromJSON("static/example1.json")
+	data, err := graph.NewDataFromJSON("static/data.json")
 	if err != nil {
 		log.Fatal(err)
 	}

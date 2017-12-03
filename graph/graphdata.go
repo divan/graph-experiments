@@ -18,8 +18,10 @@ type NodeData struct {
 }
 
 type LinkData struct {
-	Source string `json:"source"`
-	Target string `json:"target"`
+	Source  string `json:"source"`
+	Target  string `json:"target"`
+	FromIdx int    `json:"-"`
+	ToIdx   int    `json:"-"`
 }
 
 func NewData() *Data {
@@ -39,9 +41,17 @@ func NewDataFromJSON(file string) (*Data, error) {
 		return nil, err
 	}
 
+	// add node indexes to links
+	nodeIndexes := make(map[string]int)
+	for i, _ := range g.Nodes {
+		nodeIndexes[g.Nodes[i].ID] = i
+	}
+
 	g.nodeHasLinks = make(map[string]bool)
-	for _, link := range g.Links {
+	for i, link := range g.Links {
 		g.nodeHasLinks[link.Source] = true
+		g.Links[i].FromIdx = nodeIndexes[link.Source]
+		g.Links[i].ToIdx = nodeIndexes[link.Target]
 	}
 
 	return g, err
