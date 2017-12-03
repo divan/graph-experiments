@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/divan/graph-experiments/algorithms/barnehut/octree"
+	"github.com/divan/graph-experiments/cmd/graph_playground/octree"
 )
 
 type Node struct {

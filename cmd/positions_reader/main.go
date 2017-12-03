@@ -14,7 +14,11 @@ type Point struct {
 }
 
 func main() {
-	fd, err := os.Open("./positions.bin")
+	file := "./links.bin"
+	if len(os.Args) > 1 {
+		file = os.Args[1]
+	}
+	fd, err := os.Open(file)
 	if err != nil {
 		log.Fatal(err)
 	}
