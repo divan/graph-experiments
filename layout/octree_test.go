@@ -1,10 +1,10 @@
-package octree
+package layout
 
 import "testing"
 
 func TestInsert(t *testing.T) {
-	o := New()
-	p1 := &Point{1, 1, 1, 10}
+	o := NewOctree()
+	p1 := &Point{1, 1, 1, 1, 10}
 	o.Insert(p1)
 
 	if o.root == nil {
@@ -16,11 +16,11 @@ func TestInsert(t *testing.T) {
 		t.Fatalf("Expected center to be %v, but got %v", p1, center)
 	}
 
-	p2 := &Point{9, 9, 9, 10}
+	p2 := &Point{2, 9, 9, 9, 10}
 	o.Insert(p2)
 
 	center = o.root.Center()
-	expected := &Point{5, 5, 5, 20}
+	expected := &Point{0, 5, 5, 5, 20}
 	if *center != *expected {
 		t.Fatalf("Expected center to be %v, but got %v", expected, center)
 	}
@@ -49,7 +49,7 @@ func TestFindOctantIdx(t *testing.T) {
 		},
 	}
 
-	o := newLeaf(&Point{5, 5, 5, 1})
+	o := newLeaf(&Point{0, 5, 5, 5, 1})
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			idx := findOctantIdx(o, test.p)

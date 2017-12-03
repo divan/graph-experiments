@@ -1,10 +1,9 @@
-package main
+package layout
 
 import (
 	"fmt"
+	"github.com/divan/graph-experiments/graph"
 	"math"
-
-	"github.com/divan/graph-experiments/cmd/graph_playground/octree"
 )
 
 type Node struct {
@@ -20,19 +19,20 @@ func (n *Node) String() string {
 }
 
 type Layout interface {
-	Init(data *GraphData)
 	Nodes() []*Node
 	Calculate(iterations int)
 }
 
 type Layout3D struct {
 	nodes []*Node
-	links []*LinkData
+	links []*graph.LinkData
 }
 
 // Init initializes layout with nodes data. It assigns
 // semi-random positions to nodes to facilitate further simulation.
-func (l *Layout3D) Init(data *GraphData) {
+func New(data *graph.Data) Layout {
+	l := &Layout3D{}
+
 	nodes := make([]*Node, 0, len(data.Nodes))
 	for i, _ := range data.Nodes {
 		radius := 10 * math.Cbrt(float64(i))
@@ -50,13 +50,15 @@ func (l *Layout3D) Init(data *GraphData) {
 	}
 	l.nodes = nodes
 	l.links = data.Links
+
+	return l
 }
 
 func (l *Layout3D) Nodes() []*Node {
 	return l.nodes
 }
 
-func (l *Layout3D) Links() []*LinkData {
+func (l *Layout3D) Links() []*graph.LinkData {
 	return l.links
 }
 
@@ -92,7 +94,7 @@ func (f *force) Sub(f1 *force) *force {
 
 func (l *Layout3D) updatePositions() {
 	// insert current node positions into octree
-	ot := octree.New()
+	ot := NewOctree()
 	for idx, node := range l.Nodes() {
 		p := newPointFromNode(idx, node)
 		ot.Insert(p)
@@ -161,8 +163,8 @@ func springForce(from, to *Node) *force {
 	}
 }
 
-func newPointFromNode(idx int, n *Node) *octree.Point {
-	return &octree.Point{
+func newPointFromNode(idx int, n *Node) *Point {
+	return &Point{
 		Idx:  idx,
 		X:    n.X,
 		Y:    n.Y,

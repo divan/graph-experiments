@@ -1,11 +1,11 @@
-package main
+package graph
 
 import (
 	"encoding/json"
 	"os"
 )
 
-type GraphData struct {
+type Data struct {
 	Nodes []*NodeData `json:"nodes"`
 	Links []*LinkData `json:"links"`
 
@@ -22,18 +22,18 @@ type LinkData struct {
 	Target string `json:"target"`
 }
 
-func NewGraphData() *GraphData {
-	return &GraphData{}
+func NewData() *Data {
+	return &Data{}
 }
 
-func NewGraphDataFromJSON(file string) (*GraphData, error) {
+func NewDataFromJSON(file string) (*Data, error) {
 	fd, err := os.Open(file)
 	if err != nil {
 		return nil, err
 	}
 	defer fd.Close()
 
-	var g *GraphData
+	var g *Data
 	err = json.NewDecoder(fd).Decode(&g)
 	if err != nil {
 		return nil, err
@@ -47,6 +47,6 @@ func NewGraphDataFromJSON(file string) (*GraphData, error) {
 	return g, err
 }
 
-func (g *GraphData) NodeHasLinks(nodeID string) bool {
+func (g *Data) NodeHasLinks(nodeID string) bool {
 	return g.nodeHasLinks[nodeID]
 }

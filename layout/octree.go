@@ -1,4 +1,4 @@
-package octree
+package layout
 
 import (
 	"errors"
@@ -54,8 +54,8 @@ func (l *leaf) Center() *Point {
 // make sure leaf satisfies octant interface at compile time.
 var _ = octant(&leaf{})
 
-// New inits new octree.
-func New() *Octree {
+// NewOctree inits new octree.
+func NewOctree() *Octree {
 	return &Octree{}
 }
 

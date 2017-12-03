@@ -1,8 +1,10 @@
-package main
+package ngraph_binary
 
 import (
 	"encoding/binary"
 	"encoding/json"
+	"github.com/divan/graph-experiments/graph"
+	"github.com/divan/graph-experiments/layout"
 	"io"
 	"log"
 	"os"
@@ -15,7 +17,7 @@ type NgraphBinaryOutput struct {
 	dir string
 }
 
-func NewNgraphBinaryOutput(dir string) *NgraphBinaryOutput {
+func NewExporter(dir string) *NgraphBinaryOutput {
 	fs, err := os.Stat(dir)
 	if err != nil {
 		log.Fatalf("Failed to prepare output dir: %v", err)
@@ -28,7 +30,7 @@ func NewNgraphBinaryOutput(dir string) *NgraphBinaryOutput {
 	}
 }
 
-func (o *NgraphBinaryOutput) Save(l Layout, data *GraphData) error {
+func (o *NgraphBinaryOutput) Save(l layout.Layout, data *graph.Data) error {
 	err := o.WritePositionsBin(l)
 	if err != nil {
 		return err
@@ -45,7 +47,7 @@ func (o *NgraphBinaryOutput) Save(l Layout, data *GraphData) error {
 // WritePositionsBin writes position data into 'positions.bin' file in the
 // following way: XYZXYZXYZ... where X, Y and Z are coordinates
 // for each node in signed 32 bit integer Little Endian format.
-func (o *NgraphBinaryOutput) WritePositionsBin(l Layout) error {
+func (o *NgraphBinaryOutput) WritePositionsBin(l layout.Layout) error {
 	file := filepath.Join(o.dir, "positions.bin")
 	fd, err := os.Create(file)
 	if err != nil {
@@ -71,7 +73,7 @@ func (o *NgraphBinaryOutput) WritePositionsBin(l Layout) error {
 // WriteLinksBin writes links information into `links.bin` file in the
 // following way: Sidx,L1idx,L2idx,S2idx,L1idx... where SNidx - is the
 // start node index, and LNidx - is the other link end node index.
-func (o *NgraphBinaryOutput) WriteLinksBin(data *GraphData) error {
+func (o *NgraphBinaryOutput) WriteLinksBin(data *graph.Data) error {
 	file := filepath.Join(o.dir, "links.bin")
 	fd, err := os.Create(file)
 	if err != nil {
@@ -100,7 +102,7 @@ func (o *NgraphBinaryOutput) WriteLinksBin(data *GraphData) error {
 
 // WriteLabels writes node ids (labels) information into `labels.json` file
 // as an array of strings.
-func (o *NgraphBinaryOutput) WriteLabels(data *GraphData) error {
+func (o *NgraphBinaryOutput) WriteLabels(data *graph.Data) error {
 	file := filepath.Join(o.dir, "labels.json")
 	fd, err := os.Create(file)
 	if err != nil {
