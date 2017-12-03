@@ -1,5 +1,4 @@
-
-{
+exports.graphData = {
   "nodes": [
     {
       "id": "Foo",
@@ -17,4 +16,4 @@
       "value": 1
     }
   ]
-}
+};

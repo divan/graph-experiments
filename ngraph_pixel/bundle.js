@@ -50,10 +50,10 @@ var ajax = require('./ajax.js');
 var pixel = require('ngraph.pixel');
 
 Promise.all([
-  ajax('data/positions.bin', { responseType: 'arraybuffer' }).then(toInt32Array),
-  ajax('data/links.bin', { responseType: 'arraybuffer' }).then(toInt32Array),
-  ajax('data/labels.json').then(toJson),
-  ajax('data.json').then(toJson)
+  ajax('data/data/positions.bin', { responseType: 'arraybuffer' }).then(toInt32Array),
+  ajax('data/data/links.bin', { responseType: 'arraybuffer' }).then(toInt32Array),
+  ajax('data/data/labels.json').then(toJson),
+  ajax('data/data.json').then(toJson)
 ]).then(render);
 
 function toInt32Array(oReq) {
@@ -88,15 +88,15 @@ function render(data) {
 
     link() {
         return {
-            fromColor: 0x777777,
-            toColor: 0xaaaaaa
+            fromColor: 0xffffff,
+            toColor: 0xffffff
         };
     },
 
     // We need to use "dumb" links, otherwise it will be slow
     // Dumb links cannot be updated directly via properties. Have
     // to use renderer.edgeView().setFromColor(), renderer.edgeView().setToColor(), etc.
-    activeLink: false
+    activeLink: true
   });
 
   var layout = renderer.layout();
@@ -127,6 +127,7 @@ function initGraphFromLinksAndLabels(links, labels, graphData) {
   return graph;
 
   function processLink(link) {
+	console.log("Adding link", link);
     if (link < 0) {
       srcIndex = -link - 1;
     } else {

@@ -8,12 +8,12 @@ import (
 func main() {
 	var (
 		webOnly    = flag.Bool("web", false, "Don't generate data, just serve web page")
-		iterations = flag.Int("iterations", 1500, "Number of iterations for force-directed layout simulation")
+		iterations = flag.Int("iterations", 1, "Number of iterations for force-directed layout simulation")
 	)
 	flag.Parse()
 
 	if !*webOnly {
-		data, err := NewGraphDataFromJSON("static/data.json")
+		data, err := NewGraphDataFromJSON("static/example1.json")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -22,8 +22,9 @@ func main() {
 		layout := &Layout3D{}
 		log.Printf("Initializing layout...")
 		layout.Init(data)
-		log.Printf("Calculating layout...")
-		layout.Calculate(*iterations)
+		log.Printf("Calculating layout: nodes: %v, links: %v", layout.nodes, layout.links[0])
+		_ = *iterations
+		//layout.Calculate(*iterations)
 
 		log.Printf("Writing output...")
 		out := NewNgraphBinaryOutput("./static/data")
