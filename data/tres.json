@@ -1,4 +1,4 @@
-exports.graphData = {
+{
   "nodes": [
     {
       "id": "center",
@@ -14,10 +14,6 @@ exports.graphData = {
     },
     {
       "id": "tres",
-      "group": 1
-    },
-    {
-      "id": "quatro",
       "group": 1
     }
   ],
@@ -36,16 +32,6 @@ exports.graphData = {
       "source": "center",
       "target": "tres",
       "value": 1
-    },
-    {
-      "source": "uno",
-      "target": "dos",
-      "value": 1
-    },
-    {
-      "source": "center",
-      "target": "quatro",
-      "value": 1
     }
   ]
-};
+}

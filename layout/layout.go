@@ -2,8 +2,9 @@ package layout
 
 import (
 	"fmt"
-	"github.com/divan/graph-experiments/graph"
 	"math"
+
+	"github.com/divan/graph-experiments/graph"
 )
 
 type Node struct {
@@ -68,30 +69,6 @@ func (l *Layout3D) Calculate(n int) {
 	}
 }
 
-type force struct {
-	dx, dy, dz float64
-}
-
-func (f force) String() string {
-	return fmt.Sprintf("f(%.03f, %.03f, %.03f)", f.dx, f.dy, f.dz)
-}
-
-// Add adds new force to f.
-func (f *force) Add(f1 *force) *force {
-	f.dx += f1.dx
-	f.dy += f1.dy
-	f.dz += f1.dz
-	return f
-}
-
-// Sub substracts new force from f.
-func (f *force) Sub(f1 *force) *force {
-	f.dx -= f1.dx
-	f.dy -= f1.dy
-	f.dz -= f1.dz
-	return f
-}
-
 func (l *Layout3D) updatePositions() {
 	// insert current node positions into octree
 	ot := NewOctree()
@@ -119,32 +96,6 @@ func (l *Layout3D) updatePositions() {
 	l.integrate(forces)
 }
 
-func springForce(from, to *Node) *force {
-	dx := float64(to.X - from.X)
-	dy := float64(to.Y - from.Y)
-	dz := float64(to.Z - from.Z)
-	r := math.Sqrt(dx*dx + dy*dy + dz*dz)
-
-	if r == 0 {
-		r = 10
-	}
-
-	const (
-		length = 20
-		coeff  = 0.0008
-		weight = 1
-	)
-
-	d := r - length
-	c := coeff * d / r * weight
-
-	return &force{
-		dx: c * dx,
-		dy: c * dy,
-		dz: c * dz,
-	}
-}
-
 func newPointFromNode(idx int, n *Node) *Point {
 	return &Point{
 		Idx:  idx,
@@ -152,34 +103,5 @@ func newPointFromNode(idx int, n *Node) *Point {
 		Y:    n.Y,
 		Z:    n.Z,
 		Mass: n.Mass,
-	}
-}
-
-// integrate performs forces integration using Euler numerical
-// integration method.
-func (l *Layout3D) integrate(forces []*force) {
-	const timeStep = float64(20) // FIXME: 20 what?
-	for i := 0; i < len(l.nodes); i++ {
-		body := l.nodes[i]
-		coeff := timeStep / float64(body.Mass)
-
-		vx := coeff * forces[i].dx
-		vy := coeff * forces[i].dy
-		vz := coeff * forces[i].dz
-		v := math.Sqrt(vx*vx + vy*vy + vz*vz)
-
-		if v > 1 {
-			vx = vx / v
-			vy = vy / v
-			vz = vz / v
-		}
-
-		dx := timeStep * vx
-		dy := timeStep * vy
-		dz := timeStep * vz
-
-		l.nodes[i].X += int32(dx)
-		l.nodes[i].Y += int32(dy)
-		l.nodes[i].Z += int32(dz)
 	}
 }

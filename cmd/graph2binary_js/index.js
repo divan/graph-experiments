@@ -1,6 +1,6 @@
 var ngraph = require("ngraph.graph");
 var graph = ngraph();
-var graphData = require("../data/data.js").graphData;
+var graphData = require("./data.js").graphData;
 var save = require('ngraph.tobinary');
 
 graphData.nodes.forEach(node => { graph.addNode(node["id"]); });

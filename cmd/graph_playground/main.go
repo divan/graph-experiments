@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	iterations := flag.Int("iterations", 1, "Number of iterations for force-directed layout simulation")
+	iterations := flag.Int("steps", 100, "Number of iterations for force-directed layout simulation")
 	flag.Parse()
 
 	data, err := graph.NewDataFromJSON("static/data.json")
