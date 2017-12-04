@@ -6,6 +6,8 @@ import (
 	"math"
 )
 
+const theta = 0.5 // barne-hut defaults
+
 // Octree represents Octree data structure.
 // See https://en.wikipedia.org/wiki/Octree for details.
 type Octree struct {
@@ -107,39 +109,48 @@ func (l *leaf) Insert(p *Point) octant {
 	//external node, and we have two points in one octant.
 	//need to convert it to internal node and divide
 	node := newNode()
-	node.massCenter = l.Center()
+	node.massCenter = massCenter([]*Point{l.Center(), p})
+
 	idx1 := findOctantIdx(node, l.Center())
 	idx2 := findOctantIdx(node, p)
 	node.leafs[idx1] = l
 	node.leafs[idx2] = newLeaf(p)
-	node.updateMassCenter()
 	return node
 }
 
 // update center of the mass of the given node, calculating it from
 // leaf centers of the mass.
 func (n *node) updateMassCenter() {
-	var (
-		p          = &Point{}
-		xm, ym, zm int64
-	)
-
-	for _, leaf := range n.leafs {
-		if leaf == nil || leaf.Center() == nil {
-			continue
-		}
-		c := leaf.Center()
-		p.Mass += c.Mass
-		xm += int64(c.X) * int64(c.Mass)
-		ym += int64(c.Y) * int64(c.Mass)
-		zm += int64(c.Z) * int64(c.Mass)
+	var points []*Point
+	for i := range n.leafs {
+		points = append(points, n.leafs[i].Center())
 	}
 
-	p.X = int32(xm / int64(p.Mass))
-	p.Y = int32(ym / int64(p.Mass))
-	p.Z = int32(zm / int64(p.Mass))
+	n.massCenter = massCenter(points)
+}
 
-	n.massCenter = p
+func massCenter(points []*Point) *Point {
+	var (
+		xm, ym, zm int64
+		totalMass  int64
+	)
+
+	for _, p := range points {
+		if p == nil {
+			continue
+		}
+		totalMass += int64(p.Mass)
+		xm += int64(p.X) * int64(p.Mass)
+		ym += int64(p.Y) * int64(p.Mass)
+		zm += int64(p.Z) * int64(p.Mass)
+	}
+
+	return &Point{
+		X:    int32(xm / totalMass),
+		Y:    int32(ym / totalMass),
+		Z:    int32(zm / totalMass),
+		Mass: int32(totalMass),
+	}
 }
 
 // findOctantIdx returns index of 8-length array with children of the
@@ -200,62 +211,40 @@ func (l *leaf) String() string {
 }
 
 // CalcForce calculates force between two nodes using Barne-Hut method.
-func (o *Octree) CalcForce(fromIdx int) (dx, dy, dz float64) {
+func (o *Octree) CalcForce(fromIdx int) (*force, error) {
 	from, err := findLeaf(o.root, fromIdx)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return o.calcForce(from, o.root)
+	return o.calcForce(from, o.root), nil
 }
 
-const theta = 0.5 // barne-hut defaults
-
-func (o *Octree) calcForce(from *leaf, to octant) (dx, dy, dz float64) {
+func (o *Octree) calcForce(from *leaf, to octant) *force {
 	if from == nil {
 		panic(errors.New("calcForce from nil"))
 	}
+	ret := &force{}
 	if toLeaf, ok := to.(*leaf); ok {
 		if toLeaf == nil || toLeaf.Center() == nil {
-			return
+			return ret
 		}
 		return gravity(from.Center(), toLeaf.Center())
 	} else if toNode, ok := to.(*node); ok {
 		// calculate ratio
 		width := toNode.width()
 
-		xx := to.Center().X - from.Center().X
-		yy := to.Center().Y - from.Center().Y
-		zz := to.Center().Z - from.Center().Z
-		r := int32(math.Sqrt(float64(xx*xx) + float64(yy*yy) + float64(zz*zz)))
+		r := distance(from.Center(), to.Center())
 
 		if float64(width)/float64(r) < theta {
 			return gravity(from.Center(), to.Center())
 		} else {
 			for i, _ := range toNode.leafs {
-				fdx, fdy, fdz := o.calcForce(from, toNode.leafs[i])
-				dx += fdx
-				dy += fdy
-				dz += fdz
+				f := o.calcForce(from, toNode.leafs[i])
+				ret.Add(f)
 			}
 		}
 	}
-	return
-}
-
-const gravityConst = -1.2 // coulumb's coeff, negative, thus nodes repel
-
-func gravity(from, to *Point) (dx, dy, dz float64) {
-	xx := float64(to.X - from.X)
-	yy := float64(to.Y - from.Y)
-	zz := float64(to.Z - from.Z)
-	// distance calculates distance between points.
-	r := int32(math.Sqrt(float64(xx*xx) + float64(yy*yy) + float64(zz*zz)))
-	if r == 0 {
-		r = 2
-	}
-
-	v := gravityConst * float64(from.Mass*to.Mass) / float64(r*r*r)
-	return (xx * v), (yy * v), (zz * v)
+	return ret
 }
 
 // findLeaf finds leaf for Point by given idx.
@@ -275,7 +264,7 @@ func findLeaf(o octant, idx int) (*leaf, error) {
 			}
 		}
 	}
-	return nil, errors.New("node not found in octree")
+	return nil, fmt.Errorf("node %d not found in octree", idx)
 }
 
 // width returns width of the node, calculated from leaf coordinates.

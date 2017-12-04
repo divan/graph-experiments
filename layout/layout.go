@@ -8,14 +8,8 @@ import (
 )
 
 type Node struct {
-	X         int32
-	Y         int32
-	Z         int32
-	Mass      int32
-	ID        string
-	VelocityX float64
-	VelocityY float64
-	VelocityZ float64
+	ID string
+	*Point
 }
 
 func (n *Node) String() string {
@@ -44,11 +38,13 @@ func New(data *graph.Data) Layout {
 		yawAngle := float64(float64(i) * math.Pi / 24)                  // sequential (divan: wut?)
 
 		node := &Node{
-			X:    int32(radius * math.Cos(rollAngle)),
-			Y:    int32(radius * math.Sin(rollAngle)),
-			Z:    int32(radius * math.Sin(yawAngle)),
-			Mass: data.Nodes[i].Weight + 1,
-			ID:   data.Nodes[i].ID,
+			Point: &Point{
+				X:    int32(radius * math.Cos(rollAngle)),
+				Y:    int32(radius * math.Sin(rollAngle)),
+				Z:    int32(radius * math.Sin(yawAngle)),
+				Mass: data.Nodes[i].Weight + 2,
+			},
+			ID: data.Nodes[i].ID,
 		}
 		nodes = append(nodes, node)
 	}
@@ -77,26 +73,40 @@ func (l *Layout3D) updatePositions() {
 	ot := NewOctree()
 	for idx, node := range l.Nodes() {
 		p := newPointFromNode(idx, node)
+		fmt.Println("Inserting point", p)
 		ot.Insert(p)
 	}
 
 	forces := make([]*force, len(l.nodes))
+
+	l.applyRepulsion(ot, forces)
+	l.applySprings(forces)
+
+	l.integrate(forces)
+	for i, _ := range l.nodes {
+		fmt.Printf("i==> Node [%d]: %v\n", i, l.nodes[i])
+	}
+}
+
+func (l *Layout3D) applyRepulsion(ot *Octree, forces []*force) {
 	// anti-gravity repelling
 	for i := range l.nodes {
 		f := &force{}
-		f.dx, f.dy, f.dz = ot.CalcForce(i)
-		forces[i] = f
+		gf, err := ot.CalcForce(i)
+		if err != nil {
+			fmt.Println("[ERROR] Force calc failed:", i, err)
+			continue
+		}
+		forces[i] = f.Add(gf)
 	}
+}
 
-	// link springs
+func (l *Layout3D) applySprings(forces []*force) {
 	for _, link := range l.links {
-		f1, f2 := forces[link.FromIdx], forces[link.ToIdx]
 		f := springForce(l.nodes[link.FromIdx], l.nodes[link.ToIdx])
-		forces[link.FromIdx] = f1.Add(f)
-		forces[link.ToIdx] = f2.Sub(f)
+		forces[link.FromIdx] = forces[link.FromIdx].Add(f)
+		forces[link.ToIdx] = forces[link.ToIdx].Sub(f)
 	}
-
-	l.integrate(forces)
 }
 
 func newPointFromNode(idx int, n *Node) *Point {

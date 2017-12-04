@@ -59,3 +59,46 @@ func TestFindOctantIdx(t *testing.T) {
 		})
 	}
 }
+
+func TestLeafInsert(t *testing.T) {
+	p1 := &Point{0, 1, 1, 1, 1}
+	p2 := &Point{1, -1, -1, -1, 1}
+	_ = p2
+	l := newLeaf(p1)
+	center := l.Center()
+	if center != p1 {
+		t.Fatalf("center != p1")
+	}
+	node := l.Insert(p2)
+	center = node.Center()
+	expected := &Point{0, 0, 0, 0, 2}
+	if *center != *expected {
+		t.Fatalf("Expected %v, but got %v", expected, center)
+	}
+}
+
+func TestBugCase1(t *testing.T) {
+	o := NewOctree()
+	points := []*Point{
+		&Point{0, -2, 4, 1, 2},
+		&Point{1, -6, 4, -1, 2},
+		&Point{2, -1, -13, 3, 2},
+		&Point{3, 14, 14, 5, 2},
+		&Point{4, -19, -5, 9, 2},
+	}
+	for i := 0; i < 5; i++ {
+		o.Insert(points[i])
+	}
+	for i := 0; i < 5; i++ {
+		leaf, err := findLeaf(o.root, i)
+		if err != nil {
+			t.Fatalf("Expected err to be non nil, got %v", err)
+		}
+		if leaf.point.Idx != i {
+			t.Fatalf("Expected point index to be %d, got %d", i, leaf.point.Idx)
+		}
+		if leaf.point != points[i] {
+			t.Fatalf("Expected point to be %v, got %v", points[i], leaf.point)
+		}
+	}
+}

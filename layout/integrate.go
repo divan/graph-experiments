@@ -6,33 +6,34 @@ import (
 
 // integrate performs forces integration using Euler numerical
 // integration method.
+//
+// F = d(m * v) / dt
+//  (mass is constant in our case)
+// v = d{x,y,z}/dt
+//
+// dv = dt * F / m
+//
+// d{x,y,z} = v * dt
 func (l *Layout3D) integrate(forces []*force) {
-	const timeStep = float64(20) // FIXME: 20 what?
+	const dt = float64(20) // FIXME: 20 what?
 	for i := 0; i < len(l.nodes); i++ {
 		body := l.nodes[i]
-		coeff := timeStep / float64(body.Mass)
+		coeff := dt / float64(body.Mass)
 
-		vx := coeff * forces[i].dx
-		vy := coeff * forces[i].dy
-		vz := coeff * forces[i].dz
-		v := math.Sqrt(vx*vx + vy*vy + vz*vz)
-
-		l.nodes[i].VelocityX += vx
-		l.nodes[i].VelocityY += vy
-		l.nodes[i].VelocityZ += vz
+		dvx := coeff * forces[i].dx
+		dvy := coeff * forces[i].dy
+		dvz := coeff * forces[i].dz
+		v := math.Sqrt(dvx*dvx + dvy*dvy + dvz*dvz)
 
 		if v > 1 {
-			vx = vx / v
-			vy = vy / v
-			vz = vz / v
-			l.nodes[i].VelocityX = vx
-			l.nodes[i].VelocityY = vy
-			l.nodes[i].VelocityZ = vz
+			dvx = dvx / v
+			dvy = dvy / v
+			dvz = dvz / v
 		}
 
-		dx := timeStep * vx
-		dy := timeStep * vy
-		dz := timeStep * vz
+		dx := dt * dvx
+		dy := dt * dvy
+		dz := dt * dvz
 
 		l.nodes[i].X += int32(dx)
 		l.nodes[i].Y += int32(dy)
