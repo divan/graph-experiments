@@ -3,8 +3,8 @@ package layout
 import "math"
 
 const (
-	springStiffness = 0.0008
-	springLength    = 5 // each spring tends to have this length
+	springStiffness = 0.011
+	springLength    = 20 // each spring tends to have this length
 
 	gravityConst = -1.2 // coulumb's coeff, negative, thus nodes repel
 )

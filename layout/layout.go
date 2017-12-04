@@ -95,6 +95,7 @@ func (l *Layout3D) applyRepulsion(ot *Octree, forces []*force) {
 		gf, err := ot.CalcForce(i)
 		if err != nil {
 			fmt.Println("[ERROR] Force calc failed:", i, err)
+			forces[i] = f
 			continue
 		}
 		forces[i] = f.Add(gf)

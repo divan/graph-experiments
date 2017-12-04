@@ -13,7 +13,7 @@ func startWeb() error {
 	port := ":20001"
 	go func() {
 		fs := http.FileServer(http.Dir("static"))
-		http.Handle("/", fs)
+		http.Handle("/", noCacheMiddleware(fs))
 		log.Fatal(http.ListenAndServe(port, nil))
 	}()
 	time.Sleep(1 * time.Second)
@@ -39,4 +39,11 @@ func startBrowser(url string) error {
 	cmd := exec.Command(args[0], append(args[1:], url)...)
 	fmt.Println("If browser window didn't appear, please go to this url:", url)
 	return cmd.Start()
+}
+
+func noCacheMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Cache-Control", "max-age=0, no-cache")
+		h.ServeHTTP(w, r)
+	})
 }
