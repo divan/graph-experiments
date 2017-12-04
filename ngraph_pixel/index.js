@@ -29,9 +29,12 @@ function render(data) {
 
   var renderer = pixel(graph, {
     node(node) {
-        var props = { size: 5, color: "0xaaaaaa"};
-        if (node.data.group === "coach") {
-            props.size = 5;
+		let weight = 2;
+		if (node.data.weight !== undefined) { weight = node.data.weight; }
+        var props = { size: weight, color: "0xaaaaaa"};
+		console.log(props);
+        if (node.data.group === 2) {
+            props.color = "0xff0000";
         }
 
         if (node.data.color !== undefined) {
@@ -43,15 +46,15 @@ function render(data) {
 
     link() {
         return {
-            fromColor: 0xffffff,
-            toColor: 0xffffff
+            fromColor: 0xaaaaaa,
+            toColor: 0xcccccc
         };
     },
 
     // We need to use "dumb" links, otherwise it will be slow
     // Dumb links cannot be updated directly via properties. Have
     // to use renderer.edgeView().setFromColor(), renderer.edgeView().setToColor(), etc.
-    activeLink: true
+    activeLink: false
   });
 
   var layout = renderer.layout();

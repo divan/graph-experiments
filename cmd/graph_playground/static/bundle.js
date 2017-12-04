@@ -53,7 +53,7 @@ Promise.all([
   ajax('data/positions.bin', { responseType: 'arraybuffer' }).then(toInt32Array),
   ajax('data/links.bin', { responseType: 'arraybuffer' }).then(toInt32Array),
   ajax('data/labels.json').then(toJson),
-  ajax('data.json').then(toJson)
+  ajax('data/data.json').then(toJson)
 ]).then(render);
 
 function toInt32Array(oReq) {
@@ -74,9 +74,12 @@ function render(data) {
 
   var renderer = pixel(graph, {
     node(node) {
-        var props = { size: 5, color: "0xaaaaaa"};
-        if (node.data.group === "coach") {
-            props.size = 5;
+		let weight = 2;
+		if (node.data.weight !== undefined) { weight = node.data.weight; }
+        var props = { size: weight, color: "0xaaaaaa"};
+		console.log(props);
+        if (node.data.group === 2) {
+            props.color = "0xff0000";
         }
 
         if (node.data.color !== undefined) {
@@ -88,8 +91,8 @@ function render(data) {
 
     link() {
         return {
-            fromColor: 0x777777,
-            toColor: 0xaaaaaa
+            fromColor: 0xaaaaaa,
+            toColor: 0xcccccc
         };
     },
 
@@ -127,6 +130,7 @@ function initGraphFromLinksAndLabels(links, labels, graphData) {
   return graph;
 
   function processLink(link) {
+	console.log("Adding link", link);
     if (link < 0) {
       srcIndex = -link - 1;
     } else {

@@ -1,6 +1,8 @@
 package layout
 
-import "math"
+import (
+	"math"
+)
 
 func springForce(from, to *Node) *force {
 	dx := float64(to.X - from.X)
@@ -9,17 +11,16 @@ func springForce(from, to *Node) *force {
 	r := math.Sqrt(dx*dx + dy*dy + dz*dz)
 
 	if r == 0 {
-		r = 10
+		r = 20
 	}
 
 	const (
 		length = 20
-		coeff  = 0.0008
-		weight = 1
+		coeff  = 0.0006
 	)
 
 	d := r - length
-	c := coeff * d / r * weight
+	c := coeff * d / r * float64(from.Mass)
 
 	return &force{
 		dx: c * dx,

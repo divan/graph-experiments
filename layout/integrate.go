@@ -1,6 +1,8 @@
 package layout
 
-import "math"
+import (
+	"math"
+)
 
 // integrate performs forces integration using Euler numerical
 // integration method.
@@ -15,10 +17,17 @@ func (l *Layout3D) integrate(forces []*force) {
 		vz := coeff * forces[i].dz
 		v := math.Sqrt(vx*vx + vy*vy + vz*vz)
 
+		l.nodes[i].VelocityX += vx
+		l.nodes[i].VelocityY += vy
+		l.nodes[i].VelocityZ += vz
+
 		if v > 1 {
 			vx = vx / v
 			vy = vy / v
 			vz = vz / v
+			l.nodes[i].VelocityX = vx
+			l.nodes[i].VelocityY = vy
+			l.nodes[i].VelocityZ = vz
 		}
 
 		dx := timeStep * vx

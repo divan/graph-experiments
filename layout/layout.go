@@ -8,11 +8,14 @@ import (
 )
 
 type Node struct {
-	X    int32
-	Y    int32
-	Z    int32
-	Mass int32
-	ID   string
+	X         int32
+	Y         int32
+	Z         int32
+	Mass      int32
+	ID        string
+	VelocityX float64
+	VelocityY float64
+	VelocityZ float64
 }
 
 func (n *Node) String() string {
@@ -44,7 +47,7 @@ func New(data *graph.Data) Layout {
 			X:    int32(radius * math.Cos(rollAngle)),
 			Y:    int32(radius * math.Sin(rollAngle)),
 			Z:    int32(radius * math.Sin(yawAngle)),
-			Mass: 1,
+			Mass: data.Nodes[i].Weight + 1,
 			ID:   data.Nodes[i].ID,
 		}
 		nodes = append(nodes, node)

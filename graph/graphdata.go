@@ -13,8 +13,9 @@ type Data struct {
 }
 
 type NodeData struct {
-	ID    string `json:"id"`
-	Group int    `json:"group"`
+	ID     string `json:"id"`
+	Group  int    `json:"group"`
+	Weight int32  `json:"weight"`
 }
 
 type LinkData struct {
