@@ -7,6 +7,8 @@ import (
 	"github.com/divan/graph-experiments/graph"
 )
 
+var graphData *graph.Data
+
 func main() {
 	flag.Parse()
 
@@ -14,6 +16,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	graphData = data
 	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes), len(data.Links))
 
 	/*

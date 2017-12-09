@@ -3,35 +3,20 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
+var graphData;
 var positions = Array();
 
-function loadData() {
-	console.log("Loading positions...");
-
-	var xhr = new XMLHttpRequest();
-	xhr.open("GET", 'data/data/positions.bin', true);
-	xhr.responseType = "arraybuffer";
-
-	xhr.onload = function (res) {
-		var arrayBuffer = res.currentTarget.response;
-		if (arrayBuffer) {
-			setPositions(arrayBuffer)
-		}
-	};
-	xhr.send(null);
-}
-
-function setPositions(buffer) {
-	var array = new Int32Array(buffer);
-	for (var i = 0; i < array.byteLength/4; i = i+3) {
-		console.log(i, {x: array[i], y: array[i+1], z: array[i+2]});
-		positions.push({x: array[i], y: array[i+1], z: array[i+2]});
-	}
+function setGraphData(data) {
+	graphData = data;
 
 	update();
 }
 
-loadData();
+function updatePositions(data) {
+	positions = data;
+
+	update();
+}
 
 // Setup scene
 const scene = new THREE.Scene();
@@ -50,13 +35,7 @@ camera.far = 20000;
 
 var tbControls = new THREE.TrackballControls(camera, renderer.domElement);
 
-var onFrame = null;
-
 var animate = function () {
-	if (onFrame) {
-		onFrame();
-	}
-
 	// frame cycle
 	tbControls.update();
 	renderer.render(scene, camera);
@@ -67,14 +46,9 @@ var width = window.innerWidth;
 var height = window.innerHeight;
 var nodeRelSize = 4;
 var nodeResolution = 8;
-var warmupTicks = 0;
-var cooldownTicks = 1000;
-var cooldownTime = 15000; //ms
 
 var update = function () {
 	resizeCanvas();
-
-	onFrame = null; // pause simulation
 
 	// parse links
 	graphData.links.forEach(link => {
@@ -159,5 +133,4 @@ var update = function () {
 	}
 };
 
-//update();
 animate();
