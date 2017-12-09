@@ -1,12 +1,23 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
+	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{}
+
+type Msg struct {
+	Type MsgType `json:"type"`
+	Data []byte  `json:"data"`
+}
+
+type MsgType string
+
+const Positions MsgType = "positions"
 
 func handleWs(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
@@ -19,14 +30,30 @@ func handleWs(w http.ResponseWriter, r *http.Request) {
 	for {
 		mt, message, err := c.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			log.Println("read:", mt, err)
 			break
 		}
 		log.Printf("recv: %s", message)
-		err = c.WriteMessage(mt, message)
-		if err != nil {
-			log.Println("write:", err)
-			break
-		}
+
+		sendPositions(c)
+	}
+}
+
+func sendPositions(c *websocket.Conn) {
+	msg := &Msg{
+		Type: Positions,
+		Data: []byte("test"),
+	}
+
+	data, err := json.Marshal(msg)
+	if err != nil {
+		log.Println("write:", err)
+		return
+	}
+
+	err = c.WriteMessage(1, data)
+	if err != nil {
+		log.Println("write:", err)
+		return
 	}
 }
