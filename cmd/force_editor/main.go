@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-	"time"
 
 	"github.com/divan/graph-experiments/graph"
 	"github.com/divan/graph-experiments/layout"
@@ -21,16 +20,9 @@ func main() {
 	log.Printf("Initializing layout...")
 	layout := layout.New(data)
 
-	ws := NewWSServer()
-	startWeb(ws)
+	ws := NewWSServer(layout)
 	ws.updateGraph(data)
-	for i := 0; i < 10; i++ {
-		log.Printf("Calculating layout...")
-		layout.Calculate(1)
-		nodes := layout.Nodes()
-		ws.updatePositions(nodes)
 
-		time.Sleep(1 * time.Second)
-	}
+	startWeb(ws)
 	select {}
 }

@@ -15,14 +15,20 @@ type WSServer struct {
 	upgrader websocket.Upgrader
 	hub      []*websocket.Conn
 
-	positions []*position
-	graph     *graph.Data
+	layout layout.Layout
+	graph  *graph.Data
+
+	positionHistory [][]*position
+	currentIdx      int
 }
 
-func NewWSServer() *WSServer {
-	return &WSServer{
+func NewWSServer(layout layout.Layout) *WSServer {
+	ws := &WSServer{
 		upgrader: websocket.Upgrader{},
+		layout:   layout,
 	}
+	ws.updatePositions()
+	return ws
 }
 
 type WSResponse struct {
@@ -44,9 +50,18 @@ type position struct {
 type MsgType string
 type WSCommand string
 
-const Positions MsgType = "positions"
-const Graph MsgType = "graph"
-const CmdInit WSCommand = "init"
+// WebSocket response types
+const (
+	RespPositions MsgType = "positions"
+	RespGraph     MsgType = "graph"
+)
+
+// WebSocket commands
+const (
+	CmdInit WSCommand = "init"
+	CmdPrev           = "prev"
+	CmdNext           = "next"
+)
 
 func (ws *WSServer) Handle(w http.ResponseWriter, r *http.Request) {
 	c, err := ws.upgrader.Upgrade(w, r, nil)
@@ -82,12 +97,16 @@ func (ws *WSServer) processRequest(c *websocket.Conn, mtype int, data []byte) {
 	case CmdInit:
 		ws.sendGraphData(c)
 		ws.sendPositions(c)
+	case CmdPrev:
+		ws.prev()
+	case CmdNext:
+		ws.next()
 	}
 }
 
 func (ws *WSServer) sendGraphData(c *websocket.Conn) {
 	msg := &WSResponse{
-		Type:  Graph,
+		Type:  RespGraph,
 		Graph: ws.graph,
 	}
 
@@ -108,8 +127,8 @@ func (ws *WSServer) sendGraphData(c *websocket.Conn) {
 
 func (ws *WSServer) sendPositions(c *websocket.Conn) {
 	msg := &WSResponse{
-		Type:      Positions,
-		Positions: ws.positions,
+		Type:      RespPositions,
+		Positions: ws.positionHistory[ws.currentIdx],
 	}
 
 	data, err := json.Marshal(msg)
@@ -127,7 +146,8 @@ func (ws *WSServer) sendPositions(c *websocket.Conn) {
 	}
 }
 
-func (ws *WSServer) updatePositions(nodes []*layout.Node) {
+func (ws *WSServer) updatePositions() {
+	nodes := ws.layout.Nodes()
 	positions := []*position{}
 	for i := 0; i < len(nodes); i++ {
 		pos := &position{
@@ -137,8 +157,8 @@ func (ws *WSServer) updatePositions(nodes []*layout.Node) {
 		}
 		positions = append(positions, pos)
 	}
-	ws.positions = positions
-
+	ws.positionHistory = append(ws.positionHistory, positions)
+	ws.currentIdx = len(ws.positionHistory) - 1
 	ws.broadcastPositions()
 }
 
@@ -148,14 +168,31 @@ func (ws *WSServer) broadcastPositions() {
 	}
 }
 
+func (ws *WSServer) updateGraph(data *graph.Data) {
+	ws.graph = data
+
+	ws.broadcastGraphData()
+}
+
 func (ws *WSServer) broadcastGraphData() {
 	for i := 0; i < len(ws.hub); i++ {
 		ws.sendGraphData(ws.hub[i])
 	}
 }
 
-func (ws *WSServer) updateGraph(data *graph.Data) {
-	ws.graph = data
+func (ws *WSServer) prev() {
+	if ws.currentIdx > 0 {
+		ws.currentIdx--
+		ws.broadcastPositions()
+	}
+}
 
-	ws.broadcastGraphData()
+func (ws *WSServer) next() {
+	if ws.currentIdx == len(ws.positionHistory)-1 {
+		ws.layout.Calculate(1)
+		ws.updatePositions()
+	} else {
+		ws.currentIdx++
+		ws.broadcastPositions()
+	}
 }
