@@ -62,7 +62,7 @@ var animate = function () {
 
 var width = window.innerWidth;
 var height = window.innerHeight;
-var nodeRelSize = 4;
+var nodeRelSize = 1;
 var nodeResolution = 8;
 
 var update = function () {
@@ -94,7 +94,7 @@ var update = function () {
 		const color = colorAccessor(node);
 		if (!sphereMaterials.hasOwnProperty(color)) {
 			sphereMaterials[color] = new THREE.MeshLambertMaterial({
-				color: /*colorStr2Hex(color || '#ffffaa')*/ '#ffffaa',
+				color: /*colorStr2Hex(color || '#ffffaa')*/ '#00ff00',
 				transparent: true,
 				opacity: 0.75
 			});
@@ -137,7 +137,7 @@ var update = function () {
 	if (camera.position.x === 0 && camera.position.y === 0) {
 		// If camera still in default position (not user modified)
 		camera.lookAt(graphScene.position);
-		camera.position.z = Math.cbrt(graphData.nodes.length) * 150;
+		camera.position.z = Math.cbrt(graphData.nodes.length) * 50;
 	}
 
 	function resizeCanvas() {
