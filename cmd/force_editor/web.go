@@ -14,6 +14,7 @@ func startWeb() error {
 	go func() {
 		fs := http.FileServer(http.Dir("web"))
 		http.Handle("/", noCacheMiddleware(fs))
+		http.HandleFunc("/ws", handleWs)
 		log.Fatal(http.ListenAndServe(port, nil))
 	}()
 	time.Sleep(1 * time.Second)

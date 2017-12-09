@@ -1,4 +1,8 @@
-var ws = new WebSocket("ws://localhost:2018/ws", "graph");
+var ws = new WebSocket('ws://' + window.location.host + '/ws');
 ws.onopen = function (event) {
-  exampleSocket.send("Here's some text that the server is urgently awaiting!"); 
+  ws.send("Here's some text that the server is urgently awaiting!"); 
 };
+
+ws.onmessage = function (event) {
+  console.log("WS", event.data);
+}
