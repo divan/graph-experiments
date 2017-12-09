@@ -33,7 +33,7 @@ function setGraphData(data) {
 function updatePositions(data) {
 	positions = data;
 
-	update();
+	updateGraph();
 }
 
 // Setup scene
@@ -85,8 +85,7 @@ var update = function () {
 	const colorAccessor = accessorFn("group");
 	let sphereGeometries = {}; // indexed by node value
 	let sphereMaterials = {}; // indexed by color
-	var idx = 0;
-	graphData.nodes.forEach(node => {
+	graphData.nodes.forEach((node, idx) => {
 		const val = valAccessor(node) || 1;
 		if (!sphereGeometries.hasOwnProperty(val)) {
 			sphereGeometries[val] = new THREE.SphereGeometry(Math.cbrt(val) * nodeRelSize, nodeResolution, nodeResolution);
@@ -110,7 +109,6 @@ var update = function () {
 		if (positions[idx] !== undefined) {
 			sphere.position.set(positions[idx].x, positions[idx].y, positions[idx].z);
 		}
-		idx++;
 	});
 
 	const linkColorAccessor = accessorFn("color");
@@ -149,6 +147,50 @@ var update = function () {
 			camera.updateProjectionMatrix();
 		}
 	}
+};
+
+var updateGraph = function () {
+	graphData.nodes.forEach((node, idx) => {
+		const sphere = node.__sphere;
+		if (!sphere) return;
+
+		sphere.position.x = positions[idx].x;
+		sphere.position.y = positions[idx].y || 0;
+		sphere.position.z = positions[idx].z || 0;
+	});
+
+
+	graphData.links.forEach(link => {
+		const line = link.__line;
+		if (!line) return;
+
+		linePos = line.geometry.attributes.position;
+
+		// TODO: move this index into map/cache or even into original graph data
+		let start, end;
+		for (let i = 0; i < graphData.nodes.length; i++) {
+			if (graphData.nodes[i].id === link.source) {
+				start = i;
+				break;
+			}	
+		}
+		for (let i = 0; i < graphData.nodes.length; i++) {
+			if (graphData.nodes[i].id === link["target"]) {
+				end = i;
+				break;
+			}	
+		}
+
+		linePos.array[0] = positions[start].x;
+		linePos.array[1] = positions[start].y || 0;
+		linePos.array[2] = positions[start].z || 0;
+		linePos.array[3] = positions[end].x;
+		linePos.array[4] = positions[end].y || 0;
+		linePos.array[5] = positions[end].z || 0;
+
+		linePos.needsUpdate = true;
+		line.geometry.computeBoundingSphere();
+	});
 };
 
 animate();
