@@ -33,6 +33,7 @@ func NewWSServer(layout layout.Layout) *WSServer {
 
 type WSResponse struct {
 	Type      MsgType     `json:"type"`
+	Idx       int         `json:"idx"`
 	Positions []*position `json:"positions,omitempty"`
 	Graph     *graph.Data `json:"graph,omitempty"`
 }
@@ -107,6 +108,7 @@ func (ws *WSServer) processRequest(c *websocket.Conn, mtype int, data []byte) {
 func (ws *WSServer) sendGraphData(c *websocket.Conn) {
 	msg := &WSResponse{
 		Type:  RespGraph,
+		Idx:   ws.currentIdx,
 		Graph: ws.graph,
 	}
 
@@ -128,6 +130,7 @@ func (ws *WSServer) sendGraphData(c *websocket.Conn) {
 func (ws *WSServer) sendPositions(c *websocket.Conn) {
 	msg := &WSResponse{
 		Type:      RespPositions,
+		Idx:       ws.currentIdx,
 		Positions: ws.positionHistory[ws.currentIdx],
 	}
 

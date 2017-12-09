@@ -15,7 +15,7 @@ import (
 //
 // d{x,y,z} = v * dt
 func (l *Layout3D) integrate(forces []*force) {
-	const dt = float64(20) // FIXME: 20 what?
+	const dt = float64(3) // FIXME: 20 what?
 	for i := 0; i < len(l.nodes); i++ {
 		body := l.nodes[i]
 		coeff := dt / float64(body.Mass)
