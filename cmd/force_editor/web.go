@@ -6,20 +6,20 @@ import (
 	"net/http"
 	"os/exec"
 	"runtime"
-	"time"
 )
 
-func startWeb() error {
+func startWeb(ws *WSServer) {
 	port := ":20002"
 	go func() {
 		fs := http.FileServer(http.Dir("web"))
 		http.Handle("/", noCacheMiddleware(fs))
-		http.HandleFunc("/ws", handleWs)
+		http.HandleFunc("/ws", ws.Handle)
 		log.Fatal(http.ListenAndServe(port, nil))
 	}()
-	time.Sleep(1 * time.Second)
-	startBrowser("http://localhost" + port)
-	select {}
+	/*
+		time.Sleep(1 * time.Second)
+		startBrowser("http://localhost" + port)
+	*/
 }
 
 // startBrowser tries to open the URL in a browser

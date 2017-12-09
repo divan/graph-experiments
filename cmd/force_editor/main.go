@@ -3,46 +3,34 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	"github.com/divan/graph-experiments/graph"
 	"github.com/divan/graph-experiments/layout"
 )
 
-var graphData *graph.Data
-
 func main() {
 	flag.Parse()
 
-	data, err := graph.NewDataFromJSON("web/data/data.json")
+	data, err := graph.NewDataFromJSON("data.json")
 	if err != nil {
 		log.Fatal(err)
 	}
-	graphData = data
 	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes), len(data.Links))
 
 	log.Printf("Initializing layout...")
 	layout := layout.New(data)
-	log.Printf("Calculating layout...")
-	layout.Calculate(1)
 
-	nodes := layout.Nodes()
-	for i := 0; i < len(nodes); i++ {
-		pos := &position{
-			X: nodes[i].X,
-			Y: nodes[i].Y,
-			Z: nodes[i].Z,
-		}
-		positionsData = append(positionsData, pos)
+	ws := NewWSServer()
+	startWeb(ws)
+	ws.updateGraph(data)
+	for i := 0; i < 10; i++ {
+		log.Printf("Calculating layout...")
+		layout.Calculate(1)
+		nodes := layout.Nodes()
+		ws.updatePositions(nodes)
+
+		time.Sleep(1 * time.Second)
 	}
-	/*
-
-		log.Printf("Writing output...")
-		ngraph := ngraph_binary.NewExporter("./static/data")
-		err = ngraph.Save(layout, data)
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
-
-	log.Fatal(startWeb())
+	select {}
 }
