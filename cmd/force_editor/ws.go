@@ -28,14 +28,7 @@ type position struct {
 	Z int32 `json:"z"`
 }
 
-var positionsData = []*position{
-	&position{
-		X: 10, Y: 20, Z: 30,
-	},
-	&position{
-		X: 20, Y: 10, Z: 5,
-	},
-}
+var positionsData = []*position{}
 
 type MsgType string
 type WSCommand string
