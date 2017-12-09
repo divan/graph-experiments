@@ -1,3 +1,5 @@
+//go:generate browserify web/index.js -o web/bundle.js
+//go:generate cp -v web/index.html web/bundle.js static/
 package main
 
 import (
