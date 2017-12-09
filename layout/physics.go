@@ -17,7 +17,7 @@ func springForce(from, to *Node) *force {
 		actualLength = springLength
 	}
 
-	x := actualLength - springLength // defomation distance
+	x := actualLength - springLength // deformation distance
 	c := springStiffness * float64(from.Mass) * x / actualLength
 
 	return &force{
