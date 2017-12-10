@@ -211,7 +211,7 @@ func (l *leaf) String() string {
 }
 
 // CalcForce calculates force between two nodes using Barne-Hut method.
-func (o *Octree) CalcForce(fromIdx int) (*force, error) {
+func (o *Octree) CalcForce(fromIdx int) (*Force, error) {
 	from, err := findLeaf(o.root, fromIdx)
 	if err != nil {
 		return nil, err
@@ -219,11 +219,11 @@ func (o *Octree) CalcForce(fromIdx int) (*force, error) {
 	return o.calcForce(from, o.root), nil
 }
 
-func (o *Octree) calcForce(from *leaf, to octant) *force {
+func (o *Octree) calcForce(from *leaf, to octant) *Force {
 	if from == nil {
 		panic(errors.New("calcForce from nil"))
 	}
-	ret := &force{}
+	ret := &Force{}
 	if toLeaf, ok := to.(*leaf); ok {
 		if toLeaf == nil || toLeaf.Center() == nil {
 			return ret

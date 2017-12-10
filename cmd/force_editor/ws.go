@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -18,8 +17,13 @@ type WSServer struct {
 	layout layout.Layout
 	graph  *graph.Data
 
-	positionHistory [][]*position
-	currentIdx      int
+	history    []*ForceAndPosition
+	currentIdx int
+}
+
+type ForceAndPosition struct {
+	Positions []*position
+	Forces    map[int][]*layout.Force
 }
 
 func NewWSServer(layout layout.Layout) *WSServer {
@@ -27,25 +31,20 @@ func NewWSServer(layout layout.Layout) *WSServer {
 		upgrader: websocket.Upgrader{},
 		layout:   layout,
 	}
-	ws.updatePositions()
+	ws.updateForcesAndPositions()
 	return ws
 }
 
 type WSResponse struct {
-	Type      MsgType     `json:"type"`
-	Idx       int         `json:"idx"`
-	Positions []*position `json:"positions,omitempty"`
-	Graph     *graph.Data `json:"graph,omitempty"`
+	Type      MsgType                 `json:"type"`
+	Idx       int                     `json:"idx"`
+	Positions []*position             `json:"positions,omitempty"`
+	Graph     *graph.Data             `json:"graph,omitempty"`
+	Forces    map[int][]*layout.Force `json:"forces,omitempty"`
 }
 
 type WSRequest struct {
 	Cmd WSCommand `json:"cmd"`
-}
-
-type position struct {
-	X int32 `json:"x"`
-	Y int32 `json:"y"`
-	Z int32 `json:"z"`
 }
 
 type MsgType string
@@ -55,6 +54,7 @@ type WSCommand string
 const (
 	RespPositions MsgType = "positions"
 	RespGraph     MsgType = "graph"
+	RespForces    MsgType = "forces"
 )
 
 // WebSocket commands
@@ -85,8 +85,6 @@ func (ws *WSServer) Handle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ws *WSServer) processRequest(c *websocket.Conn, mtype int, data []byte) {
-	log.Printf("recv: %s\n", data)
-
 	var cmd WSRequest
 	err := json.Unmarshal(data, &cmd)
 	if err != nil {
@@ -99,103 +97,39 @@ func (ws *WSServer) processRequest(c *websocket.Conn, mtype int, data []byte) {
 		ws.sendGraphData(c)
 		ws.sendPositions(c)
 	case CmdPrev:
-		ws.prev()
+		ws.cmdPrev()
 	case CmdNext:
-		ws.next()
+		ws.cmdNext()
 	}
 }
 
-func (ws *WSServer) sendGraphData(c *websocket.Conn) {
-	msg := &WSResponse{
-		Type:  RespGraph,
-		Idx:   ws.currentIdx,
-		Graph: ws.graph,
-	}
-
-	data, err := json.Marshal(msg)
-	if err != nil {
-		log.Println("write:", err)
-		return
-	}
-
-	fmt.Println("Sending", string(data))
-
-	err = c.WriteMessage(1, data)
-	if err != nil {
-		log.Println("write:", err)
-		return
-	}
-}
-
-func (ws *WSServer) sendPositions(c *websocket.Conn) {
-	msg := &WSResponse{
-		Type:      RespPositions,
-		Idx:       ws.currentIdx,
-		Positions: ws.positionHistory[ws.currentIdx],
-	}
-
-	data, err := json.Marshal(msg)
-	if err != nil {
-		log.Println("write:", err)
-		return
-	}
-
-	fmt.Println("Sending", string(data))
-
-	err = c.WriteMessage(1, data)
-	if err != nil {
-		log.Println("write:", err)
-		return
-	}
-}
-
-func (ws *WSServer) updatePositions() {
-	nodes := ws.layout.Nodes()
-	positions := []*position{}
-	for i := 0; i < len(nodes); i++ {
-		pos := &position{
-			X: nodes[i].X,
-			Y: nodes[i].Y,
-			Z: nodes[i].Z,
-		}
-		positions = append(positions, pos)
-	}
-	ws.positionHistory = append(ws.positionHistory, positions)
-	ws.currentIdx = len(ws.positionHistory) - 1
-	ws.broadcastPositions()
-}
-
-func (ws *WSServer) broadcastPositions() {
-	for i := 0; i < len(ws.hub); i++ {
-		ws.sendPositions(ws.hub[i])
-	}
-}
-
-func (ws *WSServer) updateGraph(data *graph.Data) {
-	ws.graph = data
-
-	ws.broadcastGraphData()
-}
-
-func (ws *WSServer) broadcastGraphData() {
-	for i := 0; i < len(ws.hub); i++ {
-		ws.sendGraphData(ws.hub[i])
-	}
-}
-
-func (ws *WSServer) prev() {
+func (ws *WSServer) cmdPrev() {
 	if ws.currentIdx > 0 {
 		ws.currentIdx--
 		ws.broadcastPositions()
 	}
 }
 
-func (ws *WSServer) next() {
-	if ws.currentIdx == len(ws.positionHistory)-1 {
+func (ws *WSServer) cmdNext() {
+	if ws.currentIdx == len(ws.history)-1 {
 		ws.layout.Calculate(1)
-		ws.updatePositions()
+		ws.updateForcesAndPositions()
 	} else {
 		ws.currentIdx++
 		ws.broadcastPositions()
+	}
+}
+
+func (ws *WSServer) sendMsg(c *websocket.Conn, msg *WSResponse) {
+	data, err := json.Marshal(msg)
+	if err != nil {
+		log.Println("write:", err)
+		return
+	}
+
+	err = c.WriteMessage(1, data)
+	if err != nil {
+		log.Println("write:", err)
+		return
 	}
 }

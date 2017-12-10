@@ -2,26 +2,29 @@ package layout
 
 import "fmt"
 
-type force struct {
-	dx, dy, dz float64
+type Force struct {
+	Name string  `json:"name"`
+	DX   float64 `json:"dx"`
+	DY   float64 `json:"dy"`
+	DZ   float64 `json:"dz"`
 }
 
-func (f force) String() string {
-	return fmt.Sprintf("f(%.03f, %.03f, %.03f)", f.dx, f.dy, f.dz)
+func (f Force) String() string {
+	return fmt.Sprintf("f(%.03f, %.03f, %.03f)", f.DX, f.DY, f.DZ)
 }
 
 // Add adds new force to f.
-func (f *force) Add(f1 *force) *force {
-	f.dx += f1.dx
-	f.dy += f1.dy
-	f.dz += f1.dz
+func (f *Force) Add(f1 *Force) *Force {
+	f.DX += f1.DX
+	f.DY += f1.DY
+	f.DZ += f1.DZ
 	return f
 }
 
 // Sub substracts new force from f.
-func (f *force) Sub(f1 *force) *force {
-	f.dx -= f1.dx
-	f.dy -= f1.dy
-	f.dz -= f1.dz
+func (f *Force) Sub(f1 *Force) *Force {
+	f.DX -= f1.DX
+	f.DY -= f1.DY
+	f.DZ -= f1.DZ
 	return f
 }

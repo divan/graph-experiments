@@ -19,11 +19,14 @@ func (n *Node) String() string {
 type Layout interface {
 	Nodes() []*Node
 	Calculate(iterations int)
+	Forces() map[int][]*Force
 }
 
 type Layout3D struct {
 	nodes []*Node
 	links []*graph.LinkData
+
+	forces map[int][]*Force
 }
 
 // Init initializes layout with nodes data. It assigns
@@ -48,14 +51,21 @@ func New(data *graph.Data) Layout {
 		}
 		nodes = append(nodes, node)
 	}
+
 	l.nodes = nodes
 	l.links = data.Links
+
+	l.forces = make(map[int][]*Force)
 
 	return l
 }
 
 func (l *Layout3D) Nodes() []*Node {
 	return l.nodes
+}
+
+func (l *Layout3D) Forces() map[int][]*Force {
+	return l.forces
 }
 
 func (l *Layout3D) Links() []*graph.LinkData {
@@ -73,25 +83,28 @@ func (l *Layout3D) updatePositions() {
 	ot := NewOctree()
 	for idx, node := range l.Nodes() {
 		p := newPointFromNode(idx, node)
-		fmt.Println("Inserting point", p)
 		ot.Insert(p)
 	}
 
-	forces := make([]*force, len(l.nodes))
+	forces := make([]*Force, len(l.nodes))
+	l.resetForces()
 
 	l.applyRepulsion(ot, forces)
 	l.applySprings(forces)
 
 	l.integrate(forces)
-	for i, _ := range l.nodes {
-		fmt.Printf("i==> Node [%d]: %v\n", i, l.nodes[i])
-	}
 }
 
-func (l *Layout3D) applyRepulsion(ot *Octree, forces []*force) {
+func (l *Layout3D) resetForces() {
+	l.forces = make(map[int][]*Force)
+}
+
+func (l *Layout3D) applyRepulsion(ot *Octree, forces []*Force) {
 	// anti-gravity repelling
 	for i := range l.nodes {
-		f := &force{}
+		f := &Force{
+			Name: "gravity",
+		}
 		gf, err := ot.CalcForce(i)
 		if err != nil {
 			fmt.Println("[ERROR] Force calc failed:", i, err)
@@ -99,15 +112,24 @@ func (l *Layout3D) applyRepulsion(ot *Octree, forces []*force) {
 			continue
 		}
 		forces[i] = f.Add(gf)
+
+		l.appendForce(i, forces[i])
 	}
 }
 
-func (l *Layout3D) applySprings(forces []*force) {
+func (l *Layout3D) applySprings(forces []*Force) {
 	for _, link := range l.links {
 		f := springForce(l.nodes[link.FromIdx], l.nodes[link.ToIdx])
 		forces[link.FromIdx] = forces[link.FromIdx].Add(f)
 		forces[link.ToIdx] = forces[link.ToIdx].Sub(f)
+
+		l.appendForce(link.FromIdx, f)
+		l.appendForce(link.ToIdx, (&Force{}).Sub(f))
 	}
+}
+
+func (l *Layout3D) appendForce(nodeIdx int, f *Force) {
+	l.forces[nodeIdx] = append(l.forces[nodeIdx], f)
 }
 
 func newPointFromNode(idx int, n *Node) *Point {
