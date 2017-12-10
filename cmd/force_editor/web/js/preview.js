@@ -1,28 +1,10 @@
 // WebGL
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
-document.body.appendChild( renderer.domElement );
+let canvas = document.getElementById("preview");
+var renderer = new THREE.WebGLRenderer({ canvas: canvas });
+renderer.setSize( canvas.style.width, canvas.style.height );
 
 var graphData;
 var positions = Array();
-
-// request graphData and initial positions from websocket connection
-ws.onopen = function (event) {
-	ws.send('{"cmd": "init"}'); 
-};
-
-
-ws.onmessage = function (event) {
-	let msg = JSON.parse(event.data);
-	switch(msg.type) {
-		case "graph":
-			setGraphData(msg.graph);
-			break;
-		case "positions":
-			updatePositions(msg.positions);
-			break;
-	}
-}
 
 function setGraphData(data) {
 	graphData = data;

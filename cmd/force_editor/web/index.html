@@ -1,19 +1,78 @@
-<!DOCTYPE HTML> 
-<html> 
-	<head> 
-		<meta charset="utf-8"> 
-		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-		<title>Graph Forces Editor</title> 
-		
-		<style> 
-			body {
-				margin: 0px;
-				height: 1000px;
-			}
-		</style> 
-	</head> 
-	<body> 
-		<iframe src="controls.html" frameborder="0" scrolling="no" style="height: 100%; width: 20%; float: left; " height="100%" width="20%" align="left"> </iframe>  
-		<iframe src="preview.html" frameborder="0" scrolling="no" style="overflow: hidden; height: 100%; width: 80%; " height="100%" width="80%" align="right"></iframe>
-	</body> 
+<html>
+	<head>
+		<title>Force-directed graph</title>
+		<style>
+			body { margin: 0; }
+		</style>
+		<link rel="stylesheet" href="css/controls.css" type="text/css">
+		<link rel="stylesheet" href="css/pure-min.css" type="text/css">
+		<style>
+				.button-xlarge {
+					font-size: 125%;
+				}
+
+				.button-success {
+					background: rgb(28, 184, 65);
+					color: white;
+				}
+		</style>
+	</head>
+	<body>
+		<div class="pure-g">
+			<div class="pure-u-1-5">
+				<h1>Graph Forces Editor</h1>
+				<form class="pure-form pure-form">
+					<fieldset>
+						<legend>Source</legend>
+
+						<label for="data">Data source</label>
+						<input id="data" class="pure-input-1" type="text" placeholder="Sample graph">
+
+						<div class="pure-g">
+							<div class="pure-u-1-3">
+								<button class="button-xlarge pure-button button-success" onclick="prev(event)">← Prev</button>
+							</div>
+							<div class="pure-u-1-3"></div>
+							<div class="pure-u-1-3">
+								<button class="button-xlarge pure-button button-success" onclick="next(event)">Next →</button>
+							</div>
+						</div>
+					</fieldset>
+
+					<fieldset>
+						<legend>Forces</legend>
+						<label for="force">Force 1:</label>
+						<select id="force">
+							<option>Gravity</option>
+							<option>Spring</option>
+							<option>ElectroStatic</option>
+						</select>
+
+						<input type="coeff" placeholder="1.2">
+
+						<label for="force">Force 2:</label>
+						<select id="force">
+							<option>Spring</option>
+							<option>Gravity</option>
+							<option>ElectroStatic</option>
+						</select>
+
+						<input type="coeff" placeholder="0.0011">
+
+					</fieldset>
+				</form>
+			</div>
+			<div class="pure-u-4-5">
+				<canvas id="preview"></canvas>
+			</div>
+		</div>
+		<script src="node_modules/three/build/three.min.js"></script>
+		<script src="js/controls/TrackballControls.js"></script>
+
+		<script src="js/shitty_hacks.js"></script>
+
+		<script src="js/ws.js"></script>
+		<script src="js/keys.js"></script>
+		<script src="js/preview.js"></script>
+	</body>
 </html>
