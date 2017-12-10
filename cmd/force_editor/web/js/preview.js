@@ -33,7 +33,7 @@ scene.add(graphScene);
 var camera = new THREE.PerspectiveCamera();
 camera.far = 20000;
 
-var tbControls = new THREE.TrackballControls(camera, renderer.domElement);
+var tbControls = new THREE.TrackballControls(camera, document.body);
 
 var animate = function () {
 	// frame cycle
