@@ -6,7 +6,7 @@ const (
 	springStiffness = 0.011
 	springLength    = 20 // each spring tends to have this length
 
-	gravityConst = -1.2 // coulumb's coeff, negative, thus nodes repel
+	gravityConst = -100.2 // coulumb's coeff, negative, thus nodes repel
 )
 
 // springForce calculates spring compression/extension force
@@ -34,7 +34,7 @@ func gravity(from, to *Point) *force {
 	// distance calculates distance between points.
 	r := int32(math.Sqrt(float64(xx*xx) + float64(yy*yy) + float64(zz*zz)))
 	if r == 0 {
-		r = 20
+		r = 10
 	}
 
 	v := gravityConst * float64(from.Mass*to.Mass) / float64(r*r*r)
