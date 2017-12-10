@@ -1,9 +1,8 @@
 document.addEventListener("keydown", function(event) {
-  console.log("key", event.which);
-	if (event.which == 39) { // right
+	if (event.which == 221) { // right
 		next(event);
 	};
-	if (event.which == 37) { // left
+	if (event.which == 219) { // left
 		prev(event);
 	};
 });
