@@ -19,7 +19,6 @@ function updatePositions(data) {
 }
 
 function updateForces(data) {
-	console.log("Redrawing forces", data);
 	redrawForces(data);
 }
 
@@ -205,10 +204,17 @@ var redrawForces = function (data) {
 				positions[idx].y,
 				positions[idx].z,
 			);
-			let length = 10;
-			let hex = 0xffff00;
+			let length = origin.distanceTo(dir) / 5;
 
-			let arrow = new THREE.ArrowHelper( dir, origin, length, hex );
+			let color = "red";
+			switch (force.name) {
+				case "gravity":
+					color = "blue";
+				case "spring":
+					color = "yellow";
+			}
+
+			let arrow = new THREE.ArrowHelper( dir, origin, length, color );
 
 			let arrowMesh = arrows[idx];
 			if (!arrowMesh) {
