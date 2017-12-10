@@ -204,14 +204,16 @@ var redrawForces = function (data) {
 				positions[idx].y,
 				positions[idx].z,
 			);
-			let length = origin.distanceTo(dir) / 5;
+			let length = origin.distanceTo(dir) / 8;
 
-			let color = "red";
+			let color = "yellow";
 			switch (force.name) {
 				case "gravity":
-					color = "blue";
+					color = "red";
+					break;
 				case "spring":
 					color = "yellow";
+					break;
 			}
 
 			let arrow = new THREE.ArrowHelper( dir, origin, length, color );
