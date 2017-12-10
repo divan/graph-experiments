@@ -1,10 +1,10 @@
 // WebGL
 let canvas = document.getElementById("preview");
 var renderer = new THREE.WebGLRenderer({ canvas: canvas });
-renderer.setSize( canvas.style.width, canvas.style.height );
 
 var graphData;
 var positions = Array();
+var forces = {};
 
 function setGraphData(data) {
 	graphData = data;
@@ -19,7 +19,9 @@ function updatePositions(data) {
 }
 
 function updateForces(data) {
-	redrawForces(data);
+	forces = data;
+
+	redrawForces();
 }
 
 // Setup scene
@@ -49,9 +51,9 @@ var animate = function () {
 	requestAnimationFrame( animate );
 };
 
-var width = window.innerWidth;
-var height = window.innerHeight;
-var nodeRelSize = 1;
+var width = window.innerWidth * 80 / 100 - 20;
+var height = window.innerHeight - 20;
+var nodeRelSize = 2;
 var nodeResolution = 8;
 
 var initGraph = function () {
@@ -183,15 +185,18 @@ var redrawGraph = function () {
 };
 
 var arrows = [];
-var redrawForces = function (data) {
+var redrawForces = function () {
 	arrows.forEach((nodeArrows) => {
 		nodeArrows.forEach((arrow) => {
 			graphScene.remove(arrow);
 		});
 	});
+	if (!showForces) {
+		return;
+	}
 
-	Object.keys(data).forEach(function(idx) {
-		data[idx].forEach((force, fidx) => {
+	Object.keys(forces).forEach(function(idx) {
+		forces[idx].forEach((force, fidx) => {
 			let dir = new THREE.Vector3(
 				force.dx,
 				force.dy,

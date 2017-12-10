@@ -21,7 +21,7 @@
 		<div class="pure-g">
 			<div class="pure-u-1-5">
 				<h1>Graph Forces Editor</h1>
-				<form class="pure-form pure-form">
+				<form class="pure-form pure-form-stacked">
 					<fieldset>
 						<legend>Source</legend>
 
@@ -59,7 +59,11 @@
 
 						<input type="coeff" placeholder="0.0011">
 
+
 					</fieldset>
+					<label for="forces">
+						<input id="forces" type="checkbox" checked="1" onChange="toggleForces(event)"> Show forces
+					</label>
 				</form>
 			</div>
 			<div class="pure-u-4-5">
@@ -74,6 +78,7 @@
 
 		<script src="js/ws.js"></script>
 		<script src="js/keys.js"></script>
+		<script src="js/uiControls.js"></script>
 		<script src="index.js"></script>
 	</body>
 </html>
