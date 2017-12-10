@@ -25,6 +25,9 @@ ws.onmessage = function (event) {
 		case "positions":
 			updatePositions(msg.positions);
 			break;
+		case "forces":
+			updateForces(msg.forces);
+			break;
 	}
 }
 

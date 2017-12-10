@@ -9,13 +9,18 @@ var positions = Array();
 function setGraphData(data) {
 	graphData = data;
 
-	update();
+	initGraph();
 }
 
 function updatePositions(data) {
 	positions = data;
 
-	updateGraph();
+	redrawGraph();
+}
+
+function updateForces(data) {
+	console.log("Redrawing forces", data);
+	redrawForces(data);
 }
 
 // Setup scene
@@ -50,7 +55,7 @@ var height = window.innerHeight;
 var nodeRelSize = 1;
 var nodeResolution = 8;
 
-var update = function () {
+var initGraph = function () {
 	resizeCanvas();
 
 	// parse links
@@ -134,7 +139,7 @@ var update = function () {
 	}
 };
 
-var updateGraph = function () {
+var redrawGraph = function () {
 	graphData.nodes.forEach((node, idx) => {
 		const sphere = node.__sphere;
 		if (!sphere) return;
@@ -175,6 +180,43 @@ var updateGraph = function () {
 
 		linePos.needsUpdate = true;
 		line.geometry.computeBoundingSphere();
+	});
+};
+
+var arrows = [];
+var redrawForces = function (data) {
+	arrows.forEach((nodeArrows) => {
+		nodeArrows.forEach((arrow) => {
+			graphScene.remove(arrow);
+		});
+	});
+
+	Object.keys(data).forEach(function(idx) {
+		data[idx].forEach((force, fidx) => {
+			let dir = new THREE.Vector3(
+				force.dx,
+				force.dy,
+				force.dz,
+			);
+			dir.normalize();
+
+			let origin = new THREE.Vector3(
+				positions[idx].x,
+				positions[idx].y,
+				positions[idx].z,
+			);
+			let length = 10;
+			let hex = 0xffff00;
+
+			let arrow = new THREE.ArrowHelper( dir, origin, length, hex );
+
+			let arrowMesh = arrows[idx];
+			if (!arrowMesh) {
+				arrows[idx] = [];
+				arrowMesh = arrows[idx];
+			}
+			graphScene.add(arrowMesh[fidx] = arrow);
+		})
 	});
 };
 

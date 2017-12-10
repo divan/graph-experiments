@@ -107,6 +107,7 @@ func (ws *WSServer) cmdPrev() {
 	if ws.currentIdx > 0 {
 		ws.currentIdx--
 		ws.broadcastPositions()
+		ws.broadcastForces()
 	}
 }
 
@@ -117,6 +118,7 @@ func (ws *WSServer) cmdNext() {
 	} else {
 		ws.currentIdx++
 		ws.broadcastPositions()
+		ws.broadcastForces()
 	}
 }
 
