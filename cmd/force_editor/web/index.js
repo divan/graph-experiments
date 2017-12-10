@@ -34,10 +34,13 @@ var camera = new THREE.PerspectiveCamera();
 camera.far = 20000;
 
 var tbControls = new THREE.TrackballControls(camera, document.body);
+var flyControls = new THREE.FlyControls(camera, document.body);
 
 var animate = function () {
 	// frame cycle
 	tbControls.update();
+	flyControls.update(1);
+
 	renderer.render(scene, camera);
 	requestAnimationFrame( animate );
 };
