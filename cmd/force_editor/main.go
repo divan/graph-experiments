@@ -23,6 +23,7 @@ func main() {
 	ws := NewWSServer(layout)
 	ws.updateGraph(data)
 
+	log.Printf("Starting web server...")
 	startWeb(ws)
 	select {}
 }

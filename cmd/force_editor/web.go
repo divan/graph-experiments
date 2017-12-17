@@ -16,9 +16,11 @@ func startWeb(ws *WSServer) {
 		http.HandleFunc("/ws", ws.Handle)
 		log.Fatal(http.ListenAndServe(port, nil))
 	}()
+	url := "http://localhost" + port
+	fmt.Println("Please go to this url:", url)
 	/*
 		time.Sleep(1 * time.Second)
-		startBrowser("http://localhost" + port)
+		startBrowser(url)
 	*/
 }
 
