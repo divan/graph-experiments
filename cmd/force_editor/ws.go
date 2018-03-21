@@ -23,7 +23,7 @@ type WSServer struct {
 
 type ForceAndPosition struct {
 	Positions []*position
-	Forces    map[int][]*layout.Force
+	Forces    map[int][]*layout.ForceVector
 }
 
 func NewWSServer(layout layout.Layout) *WSServer {
@@ -36,11 +36,11 @@ func NewWSServer(layout layout.Layout) *WSServer {
 }
 
 type WSResponse struct {
-	Type      MsgType                 `json:"type"`
-	Idx       int                     `json:"idx"`
-	Positions []*position             `json:"positions,omitempty"`
-	Graph     *graph.Data             `json:"graph,omitempty"`
-	Forces    map[int][]*layout.Force `json:"forces,omitempty"`
+	Type      MsgType                       `json:"type"`
+	Idx       int                           `json:"idx"`
+	Positions []*position                   `json:"positions,omitempty"`
+	Graph     *graph.Data                   `json:"graph,omitempty"`
+	Forces    map[int][]*layout.ForceVector `json:"forces,omitempty"`
 }
 
 type WSRequest struct {
