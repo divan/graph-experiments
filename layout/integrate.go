@@ -14,7 +14,7 @@ import (
 // dv = dt * F / m
 //
 // d{x,y,z} = v * dt
-func (l *Layout3D) integrate(forces []*Force) {
+func (l *Layout3D) integrate(forces []*ForceVector) {
 	const dt = float64(3) // FIXME: 20 what?
 	for i := 0; i < len(l.nodes); i++ {
 		body := l.nodes[i]

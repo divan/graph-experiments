@@ -11,7 +11,7 @@ const (
 
 // springForce calculates spring compression/extension force
 // according to Hooke's law.
-func springForce(from, to *Node) *Force {
+func springForce(from, to *Node) *ForceVector {
 	actualLength := distance(from.Point, to.Point)
 	if actualLength == 0 {
 		actualLength = springLength
@@ -20,15 +20,14 @@ func springForce(from, to *Node) *Force {
 	x := actualLength - springLength // deformation distance
 	c := springStiffness * float64(from.Mass) * x / actualLength
 
-	return &Force{
-		Name: "spring",
-		DX:   c * float64(to.X-from.X),
-		DY:   c * float64(to.Y-from.Y),
-		DZ:   c * float64(to.Z-from.Z),
+	return &ForceVector{
+		DX: c * float64(to.X-from.X),
+		DY: c * float64(to.Y-from.Y),
+		DZ: c * float64(to.Z-from.Z),
 	}
 }
 
-func gravity(from, to *Point) *Force {
+func gravity(from, to *Point) *ForceVector {
 	xx := float64(to.X - from.X)
 	yy := float64(to.Y - from.Y)
 	zz := float64(to.Z - from.Z)
@@ -39,10 +38,9 @@ func gravity(from, to *Point) *Force {
 	}
 
 	v := gravityConst * float64(from.Mass*to.Mass) / float64(r*r*r)
-	return &Force{
-		Name: "gravity",
-		DX:   (xx * v),
-		DY:   (yy * v),
-		DZ:   (zz * v),
+	return &ForceVector{
+		DX: (xx * v),
+		DY: (yy * v),
+		DZ: (zz * v),
 	}
 }

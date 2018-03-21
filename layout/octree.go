@@ -61,6 +61,18 @@ func NewOctree() *Octree {
 	return &Octree{}
 }
 
+// NewOctreeFromNodes inits new octree with current
+// positions of the nodes.
+func NewOctreeFromNodes(nodes []*Node) *Octree {
+	ot := NewOctree()
+	for i := range nodes {
+		p := newPointFromNode(i, nodes[i])
+		ot.Insert(p)
+	}
+
+	return ot
+}
+
 // newNode initializes a new node.
 func newNode() *node {
 	var leafs [8]octant
@@ -211,7 +223,7 @@ func (l *leaf) String() string {
 }
 
 // CalcForce calculates force between two nodes using Barne-Hut method.
-func (o *Octree) CalcForce(fromIdx int) (*Force, error) {
+func (o *Octree) CalcForce(fromIdx int) (*ForceVector, error) {
 	from, err := findLeaf(o.root, fromIdx)
 	if err != nil {
 		return nil, err
@@ -219,11 +231,11 @@ func (o *Octree) CalcForce(fromIdx int) (*Force, error) {
 	return o.calcForce(from, o.root), nil
 }
 
-func (o *Octree) calcForce(from *leaf, to octant) *Force {
+func (o *Octree) calcForce(from *leaf, to octant) *ForceVector {
 	if from == nil {
 		panic(errors.New("calcForce from nil"))
 	}
-	ret := &Force{}
+	ret := &ForceVector{}
 	if toLeaf, ok := to.(*leaf); ok {
 		if toLeaf == nil || toLeaf.Center() == nil {
 			return ret
