@@ -8,8 +8,14 @@ type GravityForce struct {
 	Coeff float64
 }
 
-var defaultGravity = &GravityForce{
-	Coeff: -100.2, // repelling
+var defaultGravity = NewGravityForce(-100.2) // repelling
+
+// NewGravityForce creates new gravity force with the given
+// Coloumb's law coefficient value.
+func NewGravityForce(coeff float64) Force {
+	return &GravityForce{
+		Coeff: coeff,
+	}
 }
 
 // Apply calculates the gravity force between two nodes. Satisfies Force interface.
@@ -29,4 +35,9 @@ func (g *GravityForce) Apply(from, to *Point) *ForceVector {
 		DY: (yy * v),
 		DZ: (zz * v),
 	}
+}
+
+// Name returns name of the force. Satisifies Force interface.
+func (g *GravityForce) Name() string {
+	return "gravity"
 }

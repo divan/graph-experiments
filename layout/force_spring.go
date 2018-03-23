@@ -7,14 +7,19 @@ type SpringForce struct {
 	Length    float64 // each spring tends to have this length
 }
 
-var defaultSpringForce = &SpringForce{
-	Stiffness: 0.011,
-	Length:    20.0,
+var defaultSpringForce = NewSpringForce(0.011, 20.0)
+
+// NewSpringForce creates and inits new spring force.
+func NewSpringForce(stiffness, length float64) Force {
+	return &SpringForce{
+		Stiffness: stiffness,
+		Length:    length,
+	}
 }
 
 // Apply calculates the spring force between two nodes. Satisfies Force interface.
-func (s *SpringForce) Apply(from, to *Node) *ForceVector {
-	actualLength := distance(from.Point, to.Point)
+func (s *SpringForce) Apply(from, to *Point) *ForceVector {
+	actualLength := distance(from, to)
 	if actualLength == 0 {
 		actualLength = s.Length
 	}
@@ -27,4 +32,9 @@ func (s *SpringForce) Apply(from, to *Node) *ForceVector {
 		DY: c * float64(to.Y-from.Y),
 		DZ: c * float64(to.Z-from.Z),
 	}
+}
+
+// Name returns name of the force. Satisifies Force interface.
+func (s *SpringForce) Name() string {
+	return "spring"
 }

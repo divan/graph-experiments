@@ -9,6 +9,7 @@ type ForceVector struct {
 }
 
 type Force interface {
+	Name() string
 	Apply(from, to *Point) *ForceVector
 }
 
