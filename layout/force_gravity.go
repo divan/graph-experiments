@@ -23,7 +23,7 @@ func (g *GravityForce) Apply(from, to *Point) *ForceVector {
 		r = 10
 	}
 
-	v := gravityConst * float64(from.Mass*to.Mass) / float64(r*r*r)
+	v := g.Coeff * float64(from.Mass*to.Mass) / float64(r*r*r)
 	return &ForceVector{
 		DX: (xx * v),
 		DY: (yy * v),

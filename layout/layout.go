@@ -112,7 +112,7 @@ func (l *Layout3D) applyRepulsion(ot *Octree, forces []*ForceVector) {
 
 func (l *Layout3D) applySprings(forces []*ForceVector) {
 	for _, link := range l.links {
-		f := springForce(l.nodes[link.FromIdx], l.nodes[link.ToIdx])
+		f := defaultSpringForce.Apply(l.nodes[link.FromIdx], l.nodes[link.ToIdx])
 		forces[link.FromIdx] = forces[link.FromIdx].Add(f)
 		forces[link.ToIdx] = forces[link.ToIdx].Sub(f)
 

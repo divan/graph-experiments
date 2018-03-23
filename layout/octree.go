@@ -240,7 +240,7 @@ func (o *Octree) calcForce(from *leaf, to octant) *ForceVector {
 		if toLeaf == nil || toLeaf.Center() == nil {
 			return ret
 		}
-		return gravity(from.Center(), toLeaf.Center())
+		return defaultGravity.Apply(from.Center(), toLeaf.Center())
 	} else if toNode, ok := to.(*node); ok {
 		// calculate ratio
 		width := toNode.width()
@@ -248,7 +248,7 @@ func (o *Octree) calcForce(from *leaf, to octant) *ForceVector {
 		r := distance(from.Center(), to.Center())
 
 		if float64(width)/float64(r) < theta {
-			return gravity(from.Center(), to.Center())
+			return defaultGravity.Apply(from.Center(), to.Center())
 		} else {
 			for i, _ := range toNode.leafs {
 				f := o.calcForce(from, toNode.leafs[i])
