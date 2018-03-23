@@ -8,11 +8,8 @@ type ForceVector struct {
 	DZ float64 `json:"dz"`
 }
 
-type Force struct {
-	Name string  `json:"name"`
-	DX   float64 `json:"dx"`
-	DY   float64 `json:"dy"`
-	DZ   float64 `json:"dz"`
+type Force interface {
+	Apply(from, to *Point) *ForceVector
 }
 
 func (f ForceVector) String() string {

@@ -18,9 +18,9 @@ func main() {
 	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes), len(data.Links))
 
 	log.Printf("Initializing layout...")
-	layout := layout.New(data)
+	layout3D := layout.New(data, &layout.GravityForce{})
 
-	ws := NewWSServer(layout)
+	ws := NewWSServer(layout3D)
 	ws.updateGraph(data)
 
 	log.Printf("Starting web server...")
