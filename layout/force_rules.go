@@ -68,3 +68,23 @@ var BarneHutMethod = func(
 		debugInfo.Append(node.Idx, name, *f)
 	}
 }
+
+// ForEachNode applies force to every node in the graph.
+var ForEachNode = func(
+	force Force,
+	nodes []*Node,
+	links []*graph.LinkData,
+	vectors map[int]*ForceVector,
+	debugInfo ForcesDebugData) {
+	for i, node := range nodes {
+		f := force.Apply(node.Point, nil)
+
+		// Update force vectors
+		ff := vectors[i]
+		vectors[i] = ff.Add(f)
+
+		// Update debug information
+		name := force.Name()
+		debugInfo.Append(i, name, *f)
+	}
+}
