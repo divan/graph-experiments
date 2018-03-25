@@ -1,7 +1,6 @@
 package layout
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/divan/graph-experiments/graph"
@@ -17,7 +16,7 @@ type Layout interface {
 
 type LayoutWithDebug interface {
 	Layout
-	ForceDebugInfo() map[int][]*ForceDebugInfo
+	ForcesDebugData() ForcesDebugData
 }
 
 type Layout3D struct {
@@ -25,8 +24,8 @@ type Layout3D struct {
 	links  []*graph.LinkData
 	forces []Force
 
-	forceVectors   map[int]*ForceVector // cumulative force per node ID
-	forceDebugInfo map[int][]*ForceDebugInfo
+	forceVectors    map[int]*ForceVector // cumulative force per node ID
+	forcesDebugData ForcesDebugData
 }
 
 // Init initializes layout with nodes data. It assigns
@@ -35,12 +34,54 @@ func New(data *graph.Data, forces ...Force) LayoutWithDebug {
 	nodes := generateRandomPositions(data.Nodes)
 
 	return &Layout3D{
-		nodes:          nodes,
-		links:          data.Links,
-		forces:         forces,
-		forceVectors:   make(map[int]*ForceVector),
-		forceDebugInfo: make(map[int][]*ForceDebugInfo),
+		nodes:           nodes,
+		links:           data.Links,
+		forces:          forces,
+		forceVectors:    make(map[int]*ForceVector),
+		forcesDebugData: make(ForcesDebugData),
 	}
+}
+
+func (l *Layout3D) Calculate(n int) {
+	for i := 0; i < n; i++ {
+		l.updatePositions()
+	}
+}
+
+func (l *Layout3D) updatePositions() {
+	l.resetForces()
+
+	for _, f := range l.forces {
+		applyForces := f.ByRule() // TODO: rename to Rule
+		applyForces(f, l.nodes, l.links, l.forceVectors, l.forcesDebugData)
+	}
+
+	l.integrate(l.forceVectors)
+}
+
+func (l *Layout3D) resetForces() {
+	l.forceVectors = make(map[int]*ForceVector)
+	l.forcesDebugData = make(ForcesDebugData)
+}
+
+func (l *Layout3D) AddForce(f Force) {
+	l.forces = append(l.forces, f)
+}
+
+func (l *Layout3D) ListForces() []Force {
+	return l.forces
+}
+
+func (l *Layout3D) Nodes() []*Node {
+	return l.nodes
+}
+
+func (l *Layout3D) ForcesDebugData() ForcesDebugData {
+	return l.forcesDebugData
+}
+
+func (l *Layout3D) Links() []*graph.LinkData {
+	return l.links
 }
 
 // generateRandomPositions returns new nodes array with (semi)random
@@ -66,82 +107,4 @@ func generateRandomPositions(nodes []*graph.NodeData) []*Node {
 	}
 
 	return ret
-}
-
-func (l *Layout3D) Nodes() []*Node {
-	return l.nodes
-}
-
-func (l *Layout3D) ForceDebugInfo() map[int][]*ForceDebugInfo {
-	return l.forceDebugInfo
-}
-
-func (l *Layout3D) Links() []*graph.LinkData {
-	return l.links
-}
-
-func (l *Layout3D) Calculate(n int) {
-	for i := 0; i < n; i++ {
-		l.updatePositions()
-	}
-}
-
-func (l *Layout3D) updatePositions() {
-	//ot := NewOctreeFromNodes(l.Nodes())
-
-	l.resetForces()
-
-	for _, f := range l.forces {
-		_ = f
-		//f.Apply()
-	}
-	//l.applyRepulsion(ot, forceValues)
-	//l.applySprings(forceValues)
-
-	//l.integrate(forceValues)
-}
-
-func (l *Layout3D) resetForces() {
-	l.forceVectors = make(map[int]*ForceVector)
-	l.forceDebugInfo = make(map[int][]*ForceDebugInfo)
-}
-
-func (l *Layout3D) applyRepulsion(ot *Octree) {
-	// anti-gravity repelling
-	for i, node := range l.nodes {
-		gf, err := ot.CalcForce(i)
-		if err != nil {
-			fmt.Println("[ERROR] Force calc failed:", i, err)
-			continue
-		}
-		l.forceVectors[node.Idx] = gf
-
-		// attach debug information
-		f := &ForceDebugInfo{}
-		l.appendForce(node.Idx, f)
-	}
-}
-
-func (l *Layout3D) applySprings() {
-	for _, link := range l.links {
-		f := defaultSpringForce.Apply(l.nodes[link.FromIdx].Point, l.nodes[link.ToIdx].Point)
-		l.forceVectors[link.FromIdx] = l.forceVectors[link.FromIdx].Add(f)
-		l.forceVectors[link.ToIdx] = l.forceVectors[link.ToIdx].Sub(f)
-
-		//l.appendForce(link.FromIdx, &ForceDebugInfo{"spring", f})
-		//l.appendForce(link.ToIdx, (&ForceVector{}).Sub(f))
-	}
-}
-
-// appendForce append debug information about applied force to debug info.
-func (l *Layout3D) appendForce(nodeIdx int, f *ForceDebugInfo) {
-	l.forceDebugInfo[nodeIdx] = append(l.forceDebugInfo[nodeIdx], f)
-}
-
-func (l *Layout3D) AddForce(f Force) {
-	l.forces = append(l.forces, f)
-}
-
-func (l *Layout3D) ListForces() []Force {
-	return l.forces
 }

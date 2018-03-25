@@ -6,15 +6,15 @@ import "math"
 // calculated by Coloumb's law. Implements Force interface.
 type GravityForce struct {
 	Coeff float64
+	rule  ForceRule
 }
-
-var defaultGravity = NewGravityForce(-100.2) // repelling
 
 // NewGravityForce creates new gravity force with the given
 // Coloumb's law coefficient value.
-func NewGravityForce(coeff float64) Force {
+func NewGravityForce(coeff float64, rule ForceRule) Force {
 	return &GravityForce{
 		Coeff: coeff,
+		rule:  rule,
 	}
 }
 
@@ -40,4 +40,9 @@ func (g *GravityForce) Apply(from, to *Point) *ForceVector {
 // Name returns name of the force. Satisifies Force interface.
 func (g *GravityForce) Name() string {
 	return "gravity"
+}
+
+// ByRule returns rule function to apply rules.
+func (g *GravityForce) ByRule() ForceRule {
+	return g.rule
 }

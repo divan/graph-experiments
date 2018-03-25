@@ -5,15 +5,15 @@ package layout
 type SpringForce struct {
 	Stiffness float64
 	Length    float64 // each spring tends to have this length
+	rule      ForceRule
 }
 
-var defaultSpringForce = NewSpringForce(0.011, 20.0)
-
 // NewSpringForce creates and inits new spring force.
-func NewSpringForce(stiffness, length float64) Force {
+func NewSpringForce(stiffness, length float64, rule ForceRule) Force {
 	return &SpringForce{
 		Stiffness: stiffness,
 		Length:    length,
+		rule:      rule,
 	}
 }
 
@@ -37,4 +37,9 @@ func (s *SpringForce) Apply(from, to *Point) *ForceVector {
 // Name returns name of the force. Satisifies Force interface.
 func (s *SpringForce) Name() string {
 	return "spring"
+}
+
+// ByRule returns rule function to apply rules.
+func (g *SpringForce) ByRule() ForceRule {
+	return g.rule
 }

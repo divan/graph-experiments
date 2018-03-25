@@ -11,7 +11,8 @@ const theta = 0.5 // barne-hut defaults
 // Octree represents Octree data structure.
 // See https://en.wikipedia.org/wiki/Octree for details.
 type Octree struct {
-	root octant
+	root  octant
+	force Force
 }
 
 // Point represents 3D point with mass, that'd be used
@@ -57,14 +58,16 @@ func (l *leaf) Center() *Point {
 var _ = octant(&leaf{})
 
 // NewOctree inits new octree.
-func NewOctree() *Octree {
-	return &Octree{}
+func NewOctree(force Force) *Octree {
+	return &Octree{
+		force: force,
+	}
 }
 
 // NewOctreeFromNodes inits new octree with current
-// positions of the nodes.
-func NewOctreeFromNodes(nodes []*Node) *Octree {
-	ot := NewOctree()
+// positions of the nodes and sets gravity force to force.
+func NewOctreeFromNodes(nodes []*Node, force Force) *Octree {
+	ot := NewOctree(force)
 	for i := range nodes {
 		p := newPointFromNode(i, nodes[i])
 		ot.Insert(p)
@@ -240,7 +243,7 @@ func (o *Octree) calcForce(from *leaf, to octant) *ForceVector {
 		if toLeaf == nil || toLeaf.Center() == nil {
 			return ret
 		}
-		return defaultGravity.Apply(from.Center(), toLeaf.Center())
+		return o.force.Apply(from.Center(), toLeaf.Center())
 	} else if toNode, ok := to.(*node); ok {
 		// calculate ratio
 		width := toNode.width()
@@ -248,7 +251,7 @@ func (o *Octree) calcForce(from *leaf, to octant) *ForceVector {
 		r := distance(from.Center(), to.Center())
 
 		if float64(width)/float64(r) < theta {
-			return defaultGravity.Apply(from.Center(), to.Center())
+			return o.force.Apply(from.Center(), to.Center())
 		} else {
 			for i, _ := range toNode.leafs {
 				f := o.calcForce(from, toNode.leafs[i])

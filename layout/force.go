@@ -2,11 +2,6 @@ package layout
 
 import "fmt"
 
-type ForceDebugInfo struct {
-	Name string
-	ForceVector
-}
-
 type ForceVector struct {
 	DX float64 `json:"dx"`
 	DY float64 `json:"dy"`
@@ -16,6 +11,7 @@ type ForceVector struct {
 type Force interface {
 	Name() string
 	Apply(from, to *Point) *ForceVector
+	ByRule() ForceRule
 }
 
 func (f ForceVector) String() string {
@@ -24,6 +20,10 @@ func (f ForceVector) String() string {
 
 // Add adds new force to f.
 func (f *ForceVector) Add(f1 *ForceVector) *ForceVector {
+	if f == nil {
+		f = &ForceVector{}
+	}
+
 	f.DX += f1.DX
 	f.DY += f1.DY
 	f.DZ += f1.DZ
@@ -36,4 +36,13 @@ func (f *ForceVector) Sub(f1 *ForceVector) *ForceVector {
 	f.DY -= f1.DY
 	f.DZ -= f1.DZ
 	return f
+}
+
+// Negative returns the same force vector, but in opposite direction.
+func (f *ForceVector) Negative() ForceVector {
+	return ForceVector{
+		DX: -f.DX,
+		DY: -f.DY,
+		DZ: -f.DZ,
+	}
 }

@@ -18,7 +18,9 @@ func main() {
 	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes), len(data.Links))
 
 	log.Printf("Initializing layout...")
-	layout3D := layout.New(data, &layout.GravityForce{})
+	repelling := layout.NewGravityForce(-100.2, layout.BarneHutMethod)
+	springs := layout.NewSpringForce(0.011, 20.0, layout.BarneHutMethod)
+	layout3D := layout.New(data, repelling, springs)
 
 	ws := NewWSServer(layout3D)
 	ws.updateGraph(data)

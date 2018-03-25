@@ -32,7 +32,7 @@ func (ws *WSServer) updateForcesAndPositions() {
 	}
 
 	// forces
-	forces := ws.layout.ForceValues()
+	forces := ws.layout.ForcesDebugData()
 
 	hist := &ForceAndPosition{
 		Positions: positions,
