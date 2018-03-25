@@ -19,7 +19,7 @@ func main() {
 
 	log.Printf("Initializing layout...")
 	repelling := layout.NewGravityForce(-100.2, layout.BarneHutMethod)
-	springs := layout.NewSpringForce(0.011, 20.0, layout.BarneHutMethod)
+	springs := layout.NewSpringForce(0.011, 20.0, layout.ForEachLink)
 	layout3D := layout.New(data, repelling, springs)
 
 	ws := NewWSServer(layout3D)

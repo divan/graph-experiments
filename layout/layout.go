@@ -96,6 +96,7 @@ func generateRandomPositions(nodes []*graph.NodeData) []*Node {
 
 		node := &Node{
 			Point: &Point{
+				Idx:  i,
 				X:    int32(radius * math.Cos(rollAngle)),
 				Y:    int32(radius * math.Sin(rollAngle)),
 				Z:    int32(radius * math.Sin(yawAngle)),

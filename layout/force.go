@@ -32,6 +32,10 @@ func (f *ForceVector) Add(f1 *ForceVector) *ForceVector {
 
 // Sub substracts new force from f.
 func (f *ForceVector) Sub(f1 *ForceVector) *ForceVector {
+	if f == nil {
+		f = &ForceVector{}
+	}
+
 	f.DX -= f1.DX
 	f.DY -= f1.DY
 	f.DZ -= f1.DZ
