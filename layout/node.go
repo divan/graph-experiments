@@ -7,7 +7,6 @@ import "fmt"
 type Node struct {
 	ID string
 	*Point
-	Velocity Velocity
 }
 
 // String implements Stringer interface for Node.

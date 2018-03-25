@@ -18,9 +18,10 @@ type Octree struct {
 // Point represents 3D point with mass, that'd be used
 // to calculate center of the mass of octants.
 type Point struct {
-	Idx     int
-	X, Y, Z int32
-	Mass    int32
+	Idx      int
+	X, Y, Z  int32
+	Mass     int32
+	Velocity Velocity
 }
 
 // octant represent a node in octree, which is an octant of a cube.
