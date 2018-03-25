@@ -14,19 +14,19 @@ import (
 // dv = dt * F / m
 //
 // d{x,y,z} = v * dt
-func (l *Layout3D) integrate(forces map[int]*ForceVector) {
-	const dt = float64(3) // FIXME: 20 what?
+func (l *Layout3D) integrate() {
+	const dt = float64(3)
 	for i := 0; i < len(l.nodes); i++ {
 		body := l.nodes[i]
 		coeff := dt / float64(body.Mass)
 
-		if forces[i] == nil {
-			forces[i] = &ForceVector{}
+		if l.forceVectors[i] == nil {
+			l.forceVectors[i] = &ForceVector{}
 		}
 
-		dvx := coeff * forces[i].DX
-		dvy := coeff * forces[i].DY
-		dvz := coeff * forces[i].DZ
+		dvx := coeff * l.forceVectors[i].DX
+		dvy := coeff * l.forceVectors[i].DY
+		dvz := coeff * l.forceVectors[i].DZ
 		v := math.Sqrt(dvx*dvx + dvy*dvy + dvz*dvz)
 
 		if v > 1 {

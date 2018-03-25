@@ -29,8 +29,10 @@ var ForEachLink = func(
 		f := force.Apply(from.Point, to.Point)
 
 		// Update force vectors
-		vectors[link.FromIdx].Add(f)
-		vectors[link.ToIdx].Sub(f)
+		ff := vectors[link.FromIdx]
+		vectors[link.FromIdx] = ff.Add(f)
+		ft := vectors[link.ToIdx]
+		vectors[link.ToIdx] = ft.Sub(f)
 
 		// Update debug information
 		name := force.Name()
@@ -58,7 +60,8 @@ var BarneHutMethod = func(
 		}
 
 		// Update force vectors
-		vectors[node.Idx].Add(f)
+		f1 := vectors[node.Idx]
+		vectors[node.Idx] = f1.Add(f)
 
 		// Update debug information
 		name := force.Name()

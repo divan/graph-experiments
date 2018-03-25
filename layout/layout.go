@@ -56,7 +56,7 @@ func (l *Layout3D) updatePositions() {
 		applyForces(f, l.nodes, l.links, l.forceVectors, l.forcesDebugData)
 	}
 
-	l.integrate(l.forceVectors)
+	l.integrate()
 }
 
 func (l *Layout3D) resetForces() {
