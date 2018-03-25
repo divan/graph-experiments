@@ -17,7 +17,7 @@ type Layout interface {
 
 type LayoutWithDebug interface {
 	Layout
-	ForceValues() map[int][]*ForceVector
+	ForceDebugInfo() map[int][]*ForceDebugInfo
 }
 
 type Layout3D struct {
@@ -25,7 +25,8 @@ type Layout3D struct {
 	links  []*graph.LinkData
 	forces []Force
 
-	forceValues map[int][]*ForceVector
+	forceVectors   map[int]*ForceVector // cumulative force per node ID
+	forceDebugInfo map[int][]*ForceDebugInfo
 }
 
 // Init initializes layout with nodes data. It assigns
@@ -34,12 +35,12 @@ func New(data *graph.Data, forces ...Force) LayoutWithDebug {
 	nodes := generateRandomPositions(data.Nodes)
 
 	return &Layout3D{
-		nodes:       nodes,
-		links:       data.Links,
-		forces:      forces,
-		forceValues: make(map[int][]*ForceVector),
+		nodes:          nodes,
+		links:          data.Links,
+		forces:         forces,
+		forceVectors:   make(map[int]*ForceVector),
+		forceDebugInfo: make(map[int][]*ForceDebugInfo),
 	}
-
 }
 
 // generateRandomPositions returns new nodes array with (semi)random
@@ -71,8 +72,8 @@ func (l *Layout3D) Nodes() []*Node {
 	return l.nodes
 }
 
-func (l *Layout3D) ForceValues() map[int][]*ForceVector {
-	return l.forceValues
+func (l *Layout3D) ForceDebugInfo() map[int][]*ForceDebugInfo {
+	return l.forceDebugInfo
 }
 
 func (l *Layout3D) Links() []*graph.LinkData {
@@ -86,60 +87,55 @@ func (l *Layout3D) Calculate(n int) {
 }
 
 func (l *Layout3D) updatePositions() {
-	ot := NewOctreeFromNodes(l.Nodes())
+	//ot := NewOctreeFromNodes(l.Nodes())
 
-	forceValues := make([]*ForceVector, len(l.nodes))
 	l.resetForces()
 
-	l.applyRepulsion(ot, forceValues)
-	l.applySprings(forceValues)
+	for _, f := range l.forces {
+		_ = f
+		//f.Apply()
+	}
+	//l.applyRepulsion(ot, forceValues)
+	//l.applySprings(forceValues)
 
-	l.integrate(forceValues)
+	//l.integrate(forceValues)
 }
 
 func (l *Layout3D) resetForces() {
-	l.forceValues = make(map[int][]*ForceVector)
+	l.forceVectors = make(map[int]*ForceVector)
+	l.forceDebugInfo = make(map[int][]*ForceDebugInfo)
 }
 
-func (l *Layout3D) applyRepulsion(ot *Octree, forces []*ForceVector) {
+func (l *Layout3D) applyRepulsion(ot *Octree) {
 	// anti-gravity repelling
-	for i := range l.nodes {
-		f := &ForceVector{}
+	for i, node := range l.nodes {
 		gf, err := ot.CalcForce(i)
 		if err != nil {
 			fmt.Println("[ERROR] Force calc failed:", i, err)
-			forces[i] = f
 			continue
 		}
-		forces[i] = f.Add(gf)
+		l.forceVectors[node.Idx] = gf
 
-		l.appendForce(i, forces[i])
+		// attach debug information
+		f := &ForceDebugInfo{}
+		l.appendForce(node.Idx, f)
 	}
 }
 
-func (l *Layout3D) applySprings(forces []*ForceVector) {
+func (l *Layout3D) applySprings() {
 	for _, link := range l.links {
 		f := defaultSpringForce.Apply(l.nodes[link.FromIdx].Point, l.nodes[link.ToIdx].Point)
-		forces[link.FromIdx] = forces[link.FromIdx].Add(f)
-		forces[link.ToIdx] = forces[link.ToIdx].Sub(f)
+		l.forceVectors[link.FromIdx] = l.forceVectors[link.FromIdx].Add(f)
+		l.forceVectors[link.ToIdx] = l.forceVectors[link.ToIdx].Sub(f)
 
-		l.appendForce(link.FromIdx, f)
-		l.appendForce(link.ToIdx, (&ForceVector{}).Sub(f))
+		//l.appendForce(link.FromIdx, &ForceDebugInfo{"spring", f})
+		//l.appendForce(link.ToIdx, (&ForceVector{}).Sub(f))
 	}
 }
 
-func (l *Layout3D) appendForce(nodeIdx int, f *ForceVector) {
-	l.forceValues[nodeIdx] = append(l.forceValues[nodeIdx], f)
-}
-
-func newPointFromNode(idx int, n *Node) *Point {
-	return &Point{
-		Idx:  idx,
-		X:    n.X,
-		Y:    n.Y,
-		Z:    n.Z,
-		Mass: n.Mass,
-	}
+// appendForce append debug information about applied force to debug info.
+func (l *Layout3D) appendForce(nodeIdx int, f *ForceDebugInfo) {
+	l.forceDebugInfo[nodeIdx] = append(l.forceDebugInfo[nodeIdx], f)
 }
 
 func (l *Layout3D) AddForce(f Force) {

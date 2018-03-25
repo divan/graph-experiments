@@ -2,6 +2,11 @@ package layout
 
 import "fmt"
 
+type ForceDebugInfo struct {
+	Name string
+	ForceVector
+}
+
 type ForceVector struct {
 	DX float64 `json:"dx"`
 	DY float64 `json:"dy"`
