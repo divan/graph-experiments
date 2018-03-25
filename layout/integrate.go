@@ -18,26 +18,28 @@ func (l *Layout3D) integrate() {
 	const dt = float64(3)
 	for i := 0; i < len(l.nodes); i++ {
 		body := l.nodes[i]
+		force := l.forceVectors[i]
 		coeff := dt / float64(body.Mass)
 
-		if l.forceVectors[i] == nil {
-			l.forceVectors[i] = &ForceVector{}
+		if force == nil {
+			force = &ForceVector{}
 		}
 
-		dvx := coeff * l.forceVectors[i].DX
-		dvy := coeff * l.forceVectors[i].DY
-		dvz := coeff * l.forceVectors[i].DZ
+		body.Velocity.X += coeff * force.DX
+		body.Velocity.Y += coeff * force.DY
+		body.Velocity.Z += coeff * force.DZ
+		dvx, dvy, dvz := body.Velocity.X, body.Velocity.Y, body.Velocity.Z
 		v := math.Sqrt(dvx*dvx + dvy*dvy + dvz*dvz)
 
 		if v > 1 {
-			dvx = dvx / v
-			dvy = dvy / v
-			dvz = dvz / v
+			body.Velocity.X = dvx / v
+			body.Velocity.Y = dvy / v
+			body.Velocity.Z = dvz / v
 		}
 
-		dx := dt * dvx
-		dy := dt * dvy
-		dz := dt * dvz
+		dx := dt * body.Velocity.X
+		dy := dt * body.Velocity.Y
+		dz := dt * body.Velocity.Z
 
 		l.nodes[i].X += int32(dx)
 		l.nodes[i].Y += int32(dy)

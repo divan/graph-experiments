@@ -7,6 +7,7 @@ import "fmt"
 type Node struct {
 	ID string
 	*Point
+	Velocity Velocity
 }
 
 // String implements Stringer interface for Node.
@@ -22,4 +23,11 @@ func newPointFromNode(idx int, n *Node) *Point {
 		Z:    n.Z,
 		Mass: n.Mass,
 	}
+}
+
+// Velocity represents velocity vector.
+type Velocity struct {
+	X float64
+	Y float64
+	Z float64
 }
