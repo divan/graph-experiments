@@ -20,7 +20,8 @@ func main() {
 	log.Printf("Initializing layout...")
 	repelling := layout.NewGravityForce(-100.2, layout.BarneHutMethod)
 	springs := layout.NewSpringForce(0.011, 20.0, layout.ForEachLink)
-	layout3D := layout.New(data, repelling, springs)
+	drag := layout.NewDragForce(0.9, layout.ForEachNode)
+	layout3D := layout.New(data, repelling, springs, drag)
 
 	ws := NewWSServer(layout3D)
 	ws.updateGraph(data)
