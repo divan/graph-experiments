@@ -3,6 +3,7 @@ package layout
 import (
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/divan/graph-experiments/graph"
 )
@@ -53,15 +54,18 @@ func New(data *graph.Data, forces ...Force) LayoutWithDebug {
 func (l *Layout3D) Calculate() {
 	// tx is the total movement, which should drop to the minimum
 	// at the minimal energy state
+	fmt.Println("Simulation started...")
+	var now = time.Now()
 	var count int
 	for tx := math.MaxFloat64; tx >= stableThreshold; {
 		tx = l.UpdatePositions()
 		count++
 		if count%1000 == 0 {
-			fmt.Printf("Iterations: %d, tx: %f\n", count, tx)
+			since := time.Since(now)
+			fmt.Printf("Iterations: %d, tx: %f, time:\n", count, tx, since)
 		}
 	}
-	fmt.Println("Total Iterations:", count)
+	fmt.Printf("Simulation finished in %v, run %d iterations\n", time.Since(now), count)
 }
 
 // CalculateN run positions' recalculations exactly N times.
