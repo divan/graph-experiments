@@ -16,4 +16,8 @@ document.addEventListener("keydown", function(event) {
 		calc(event);
 		return;
 	};
+	if (event.which == 82) { // r
+		resetPositions(event);
+		return;
+	};
 });

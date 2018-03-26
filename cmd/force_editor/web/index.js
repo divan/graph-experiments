@@ -195,6 +195,9 @@ var redrawForces = function () {
 		return;
 	}
 
+	if (forces === undefined) {
+		return;
+	}
 	Object.keys(forces).forEach(function(idx) {
 		forces[idx].forEach((force, fidx) => {
 			let dir = new THREE.Vector3(

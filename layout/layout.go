@@ -16,6 +16,7 @@ type Layout interface {
 	Nodes() []*Node
 	Calculate()
 	CalculateN(iterations int)
+	Reset()
 
 	AddForce(Force)
 	ListForces() []Force
@@ -27,6 +28,8 @@ type LayoutWithDebug interface {
 }
 
 type Layout3D struct {
+	data *graph.Data
+
 	nodes  []*Node
 	links  []*graph.LinkData
 	forces []Force
@@ -38,15 +41,43 @@ type Layout3D struct {
 // Init initializes layout with nodes data. It assigns
 // semi-random positions to nodes to facilitate further simulation.
 func New(data *graph.Data, forces ...Force) LayoutWithDebug {
-	nodes := generateRandomPositions(data.Nodes)
-
-	return &Layout3D{
-		nodes:           nodes,
+	l := &Layout3D{
+		data:            data,
 		links:           data.Links,
 		forces:          forces,
 		forceVectors:    make(map[int]*ForceVector),
 		forcesDebugData: make(ForcesDebugData),
 	}
+
+	l.Reset()
+
+	return l
+}
+
+// Reset resets positions to the (semi)pseudorandom positions and cancels all
+// forces and velocities.
+func (l *Layout3D) Reset() {
+	l.nodes = make([]*Node, 0, len(l.data.Nodes))
+
+	for i := range l.data.Nodes {
+		radius := 10 * math.Cbrt(float64(i))
+		rollAngle := float64(float64(i) * math.Pi * (3 - math.Sqrt(5))) // golden angle
+		yawAngle := float64(float64(i) * math.Pi / 24)                  // sequential (divan: wut?)
+
+		node := &Node{
+			Point: &Point{
+				Idx:  i,
+				X:    int32(radius * math.Cos(rollAngle)),
+				Y:    int32(radius * math.Sin(rollAngle)),
+				Z:    int32(radius * math.Sin(yawAngle)),
+				Mass: l.data.Nodes[i].Weight + 2,
+			},
+			ID: l.data.Nodes[i].ID,
+		}
+		l.nodes = append(l.nodes, node)
+	}
+
+	l.resetForces()
 }
 
 // Calculate runs positions' recalculations iteratively until the
@@ -111,30 +142,4 @@ func (l *Layout3D) ForcesDebugData() ForcesDebugData {
 
 func (l *Layout3D) Links() []*graph.LinkData {
 	return l.links
-}
-
-// generateRandomPositions returns new nodes array with (semi)random
-// positions visually distributed in a 3D space.
-func generateRandomPositions(nodes []*graph.NodeData) []*Node {
-	ret := make([]*Node, 0, len(nodes))
-
-	for i := range nodes {
-		radius := 10 * math.Cbrt(float64(i))
-		rollAngle := float64(float64(i) * math.Pi * (3 - math.Sqrt(5))) // golden angle
-		yawAngle := float64(float64(i) * math.Pi / 24)                  // sequential (divan: wut?)
-
-		node := &Node{
-			Point: &Point{
-				Idx:  i,
-				X:    int32(radius * math.Cos(rollAngle)),
-				Y:    int32(radius * math.Sin(rollAngle)),
-				Z:    int32(radius * math.Sin(yawAngle)),
-				Mass: nodes[i].Weight + 2,
-			},
-			ID: nodes[i].ID,
-		}
-		ret = append(ret, node)
-	}
-
-	return ret
 }

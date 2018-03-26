@@ -59,10 +59,11 @@ const (
 
 // WebSocket commands
 const (
-	CmdInit WSCommand = "init"
-	CmdPrev           = "prev"
-	CmdNext           = "next"
-	CmdCalc           = "calc"
+	CmdInit  WSCommand = "init"
+	CmdPrev            = "prev"
+	CmdNext            = "next"
+	CmdCalc            = "calc"
+	CmdReset           = "reset"
 )
 
 func (ws *WSServer) Handle(w http.ResponseWriter, r *http.Request) {
@@ -103,6 +104,8 @@ func (ws *WSServer) processRequest(c *websocket.Conn, mtype int, data []byte) {
 		ws.cmdNext()
 	case CmdCalc:
 		ws.cmdCalc()
+	case CmdReset:
+		ws.cmdReset()
 	}
 }
 
@@ -127,6 +130,11 @@ func (ws *WSServer) cmdNext() {
 
 func (ws *WSServer) cmdCalc() {
 	ws.layout.Calculate()
+	ws.updateForcesAndPositions()
+}
+
+func (ws *WSServer) cmdReset() {
+	ws.layout.Reset()
 	ws.updateForcesAndPositions()
 }
 
