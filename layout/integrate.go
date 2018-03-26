@@ -41,8 +41,8 @@ func (l *Layout3D) integrate() {
 		dy := dt * body.Velocity.Y
 		dz := dt * body.Velocity.Z
 
-		l.nodes[i].X += int32(dx)
-		l.nodes[i].Y += int32(dy)
-		l.nodes[i].Z += int32(dz)
+		body.X += int32(dx)
+		body.Y += int32(dy)
+		body.Z += int32(dz)
 	}
 }
