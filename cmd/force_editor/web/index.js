@@ -211,13 +211,16 @@ var redrawForces = function () {
 			);
 			let length = origin.distanceTo(dir) / 8;
 
-			let color = "yellow";
+			let color = "gray";
 			switch (force.name) {
 				case "gravity":
 					color = "red";
 					break;
 				case "spring":
 					color = "yellow";
+					break;
+				case "drag":
+					color = "blue";
 					break;
 			}
 

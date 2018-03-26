@@ -62,6 +62,7 @@ const (
 	CmdInit WSCommand = "init"
 	CmdPrev           = "prev"
 	CmdNext           = "next"
+	CmdCalc           = "calc"
 )
 
 func (ws *WSServer) Handle(w http.ResponseWriter, r *http.Request) {
@@ -100,6 +101,8 @@ func (ws *WSServer) processRequest(c *websocket.Conn, mtype int, data []byte) {
 		ws.cmdPrev()
 	case CmdNext:
 		ws.cmdNext()
+	case CmdCalc:
+		ws.cmdCalc()
 	}
 }
 
@@ -113,13 +116,18 @@ func (ws *WSServer) cmdPrev() {
 
 func (ws *WSServer) cmdNext() {
 	if ws.currentIdx == len(ws.history)-1 {
-		ws.layout.Calculate(1)
+		ws.layout.CalculateN(1)
 		ws.updateForcesAndPositions()
 	} else {
 		ws.currentIdx++
 		ws.broadcastPositions()
 		ws.broadcastForces()
 	}
+}
+
+func (ws *WSServer) cmdCalc() {
+	ws.layout.Calculate()
+	ws.updateForcesAndPositions()
 }
 
 func (ws *WSServer) sendMsg(c *websocket.Conn, msg *WSResponse) {

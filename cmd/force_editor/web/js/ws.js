@@ -10,6 +10,11 @@ var next = function(e) {
 	ws.send('{"cmd": "next"}');
 }
 
+var calc = function(e) {
+	e.preventDefault();
+	ws.send('{"cmd": "calc"}');
+}
+
 // request graphData and initial positions from websocket connection
 ws.onopen = function (event) {
 	ws.send('{"cmd": "init"}'); 

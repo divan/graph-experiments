@@ -14,8 +14,11 @@ import (
 // dv = dt * F / m
 //
 // d{x,y,z} = v * dt
-func (l *Layout3D) integrate() {
+//
+// returns total movement amount
+func (l *Layout3D) integrate() float64 {
 	const dt = float64(3)
+	var tx, ty, tz float64 // total movement
 	for i := 0; i < len(l.nodes); i++ {
 		body := l.nodes[i]
 		force := l.forceVectors[i]
@@ -44,5 +47,11 @@ func (l *Layout3D) integrate() {
 		body.X += int32(dx)
 		body.Y += int32(dy)
 		body.Z += int32(dz)
+
+		tx += math.Abs(dx)
+		ty += math.Abs(dy)
+		tz += math.Abs(dz)
 	}
+
+	return (tx*tx + ty*ty + tz*tz) / float64(len(l.nodes))
 }
