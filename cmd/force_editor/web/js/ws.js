@@ -18,6 +18,7 @@ var calc = function(e) {
 // request graphData and initial positions from websocket connection
 ws.onopen = function (event) {
 	ws.send('{"cmd": "init"}'); 
+	ws.send('{"cmd": "calc"}');
 };
 
 
