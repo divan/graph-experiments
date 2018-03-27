@@ -2,6 +2,7 @@ package layout
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 
 // stableThreshold determines the movement diff needed to
 // call the system stable
-const stableThreshold = 20.0
+const stableThreshold = 0.1
 
 type Layout interface {
 	Nodes() []*Node
@@ -86,14 +87,19 @@ func (l *Layout3D) Calculate() {
 	// tx is the total movement, which should drop to the minimum
 	// at the minimal energy state
 	fmt.Println("Simulation started...")
-	var now = time.Now()
-	var count int
-	for tx := math.MaxFloat64; tx >= stableThreshold; {
+	var (
+		now    = time.Now()
+		count  int
+		prevTx float64
+	)
+	for tx := math.MaxFloat64; math.Abs(tx-prevTx) >= stableThreshold; {
+		prevTx = tx
 		tx = l.UpdatePositions()
+		log.Println("PrevTx, tx:", tx, ", diff:", math.Abs(tx-prevTx))
 		count++
 		if count%1000 == 0 {
 			since := time.Since(now)
-			fmt.Printf("Iterations: %d, tx: %f, time:\n", count, tx, since)
+			fmt.Printf("Iterations: %d, tx: %f, time: %v\n", count, tx, since)
 		}
 	}
 	fmt.Printf("Simulation finished in %v, run %d iterations\n", time.Since(now), count)
