@@ -29,6 +29,16 @@ type NetLink struct {
 	To   string `json:"target"`
 }
 
+func (data *NetworkData) linkExists(fromIP, toIP string) bool {
+	for _, link := range data.Links {
+		if link.From == fromIP && link.To == toIP ||
+			link.To == fromIP && link.From == toIP {
+			return true
+		}
+	}
+	return false
+}
+
 func GenerateNetwork(w io.Writer, hosts, conn int) error {
 	data := &NetworkData{}
 	gen := NewIPGenerator("192.168.1.1")
@@ -45,6 +55,13 @@ func GenerateNetwork(w io.Writer, hosts, conn int) error {
 			}
 			// use uniform distribution for now
 			idx := rand.Intn(len(data.Nodes) - 1)
+			if data.linkExists(data.Nodes[idx].IP, data.Nodes[i].IP) {
+				idx = rand.Intn(len(data.Nodes) - 1)
+				if data.linkExists(data.Nodes[idx].IP, data.Nodes[i].IP) {
+					idx = rand.Intn(len(data.Nodes) - 1)
+				}
+			}
+
 			link.To = data.Nodes[idx].IP
 			data.Links = append(data.Links, link)
 		}

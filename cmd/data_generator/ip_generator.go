@@ -35,7 +35,7 @@ func (i *IPGenerator) NextAddress() string {
 			} else {
 				b = 0
 				if a > 255 {
-					panic("Seriosly?")
+					panic("Seriously?")
 					// a = 0 :)
 				}
 
