@@ -42,6 +42,7 @@ func (s *Simulator) LogEntries2PropagationLog(entries []*LogEntry) *PropagationL
 	}
 
 	tss := make(map[time.Duration][]int)
+	tsnodes := make(map[time.Duration][]int)
 	for _, entry := range entries {
 		idx := findLink(entry.From, entry.To)
 		if idx == -1 {
@@ -49,6 +50,7 @@ func (s *Simulator) LogEntries2PropagationLog(entries []*LogEntry) *PropagationL
 			continue
 		}
 
+		// fill links map
 		if _, ok := tss[entry.Ts]; !ok {
 			tss[entry.Ts] = make([]int, 0)
 		}
@@ -56,17 +58,27 @@ func (s *Simulator) LogEntries2PropagationLog(entries []*LogEntry) *PropagationL
 		values := tss[entry.Ts]
 		values = append(values, idx)
 		tss[entry.Ts] = values
+
+		// fill tsnodes map
+		if _, ok := tsnodes[entry.Ts]; !ok {
+			tsnodes[entry.Ts] = make([]int, 0)
+		}
+		nnodes := tsnodes[entry.Ts]
+		nnodes = append(nnodes, entry.From, entry.To)
+		tsnodes[entry.Ts] = nnodes
 	}
 
 	var ret = &PropagationLog{
 		Timestamps: make([]int, 0, len(tss)),
 		Indices:    make([][]int, 0, len(tss)),
+		Nodes:      make([][]int, 0, len(tss)),
 	}
 
 	for ts, links := range tss {
 		ret.Timestamps = append(ret.Timestamps, int(ts))
 		ret.Indices = append(ret.Indices, links)
-		fmt.Println("Adding", ts*time.Millisecond, int(ts), links)
+		ret.Nodes = append(ret.Nodes, tsnodes[ts])
+		fmt.Println("Adding", ts*time.Millisecond, int(ts), links, tsnodes[ts])
 	}
 
 	return ret

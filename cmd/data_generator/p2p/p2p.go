@@ -13,6 +13,7 @@ import (
 type PropagationLog struct {
 	Timestamps []int   // timestamps in milliseconds starting from T0
 	Indices    [][]int // indices of links for each step, len should be equal to len of Timestamps field
+	Nodes      [][]int // indices of nodes involved in each step
 }
 
 // SimulatePropagation start simulation of message propagation through the network
