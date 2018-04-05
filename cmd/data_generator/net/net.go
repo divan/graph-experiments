@@ -1,35 +1,34 @@
-package main
+package net
 
 import (
-	//"github.com/divan/graph-experiments/graph"
-
 	"encoding/json"
 	"io"
 	"math/rand"
 )
 
-type NetworkData struct {
-	Nodes []*NetNode `json:"nodes"`
-	Links []*NetLink `json:"links"`
+type Data struct {
+	Nodes []*Node `json:"nodes"`
+	Links []*Link `json:"links"`
 }
 
-type NetNode struct {
+type Node struct {
 	IP string `json:"id"`
 }
 
-// NewNetNode generates new NetNode with givan IP address.
-func NewNetNode(ip string) *NetNode {
-	return &NetNode{
+// NewNode generates new Node with givan IP address.
+func NewNode(ip string) *Node {
+	return &Node{
 		IP: ip,
 	}
 }
 
-type NetLink struct {
+// Link represents link between two nodes.
+type Link struct {
 	From string `json:"source"`
 	To   string `json:"target"`
 }
 
-func (data *NetworkData) linkExists(fromIP, toIP string) bool {
+func (data *Data) linkExists(fromIP, toIP string) bool {
 	for _, link := range data.Links {
 		if link.From == fromIP && link.To == toIP ||
 			link.To == fromIP && link.From == toIP {
@@ -41,18 +40,18 @@ func (data *NetworkData) linkExists(fromIP, toIP string) bool {
 
 // GenerateNetwork generates dummy network with known number of
 // hosts with known number of connections each.
-func GenerateNetwork(hosts, conn int) *NetworkData {
-	data := &NetworkData{}
+func GenerateNetwork(hosts, conn int) *Data {
+	data := &Data{}
 	gen := NewIPGenerator("192.168.1.1")
 	for i := 0; i < hosts; i++ {
 		ip := gen.NextAddress()
-		node := NewNetNode(ip)
+		node := NewNode(ip)
 		data.Nodes = append(data.Nodes, node)
 	}
 
 	for i := 0; i < hosts; i++ {
 		for j := 0; j < conn; j++ {
-			link := &NetLink{
+			link := &Link{
 				From: data.Nodes[i].IP,
 			}
 			// use uniform distribution for now
@@ -72,8 +71,8 @@ func GenerateNetwork(hosts, conn int) *NetworkData {
 	return data
 }
 
-// DumpNetworkData serializes and dumps network graph data into the
+// DumpData serializes and dumps network graph data into the
 // given writer.
-func DumpNetworkData(w io.Writer, data *NetworkData) error {
+func DumpData(w io.Writer, data *Data) error {
 	return json.NewEncoder(w).Encode(data)
 }

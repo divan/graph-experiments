@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"github.com/divan/graph-experiments/cmd/data_generator/net"
 	"io"
 	"log"
 	"os"
@@ -29,7 +30,12 @@ func main() {
 	}
 
 	if *dataKind == "net" {
-		data := GenerateNetwork(*netHosts, *netConns)
-		log.Fatal(DumpNetworkData(w, data))
+		data := net.GenerateNetwork(*netHosts, *netConns)
+		if err := net.DumpData(w, data); err != nil {
+			log.Fatal(err)
+		}
+		if *output != "-" {
+			log.Println("Written network graph into", *output)
+		}
 	}
 }
