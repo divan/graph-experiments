@@ -39,7 +39,9 @@ func (data *NetworkData) linkExists(fromIP, toIP string) bool {
 	return false
 }
 
-func GenerateNetwork(w io.Writer, hosts, conn int) error {
+// GenerateNetwork generates dummy network with known number of
+// hosts with known number of connections each.
+func GenerateNetwork(hosts, conn int) *NetworkData {
 	data := &NetworkData{}
 	gen := NewIPGenerator("192.168.1.1")
 	for i := 0; i < hosts; i++ {
@@ -67,5 +69,11 @@ func GenerateNetwork(w io.Writer, hosts, conn int) error {
 		}
 	}
 
+	return data
+}
+
+// DumpNetworkData serializes and dumps network graph data into the
+// given writer.
+func DumpNetworkData(w io.Writer, data *NetworkData) error {
 	return json.NewEncoder(w).Encode(data)
 }

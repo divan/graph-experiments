@@ -29,6 +29,7 @@ func main() {
 	}
 
 	if *dataKind == "net" {
-		GenerateNetwork(w, *netHosts, *netConns)
+		data := GenerateNetwork(*netHosts, *netConns)
+		log.Fatal(DumpNetworkData(w, data))
 	}
 }
