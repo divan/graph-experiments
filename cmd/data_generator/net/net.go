@@ -1,8 +1,6 @@
 package net
 
 import (
-	"encoding/json"
-	"io"
 	"math/rand"
 )
 
@@ -69,10 +67,4 @@ func GenerateNetwork(hosts, conn int) *Data {
 	}
 
 	return data
-}
-
-// DumpData serializes and dumps network graph data into the
-// given writer.
-func DumpData(w io.Writer, data *Data) error {
-	return json.NewEncoder(w).Encode(data)
 }
