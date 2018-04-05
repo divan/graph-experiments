@@ -20,16 +20,13 @@ type P2PPropagationLog struct {
 // each delay.
 // Simulation assumes that links are all of equal length and propagation takes
 // fixed amount of time for now.
-func SimulatePropagation(data *net.Data, N int, delay time.Duration, startNodeIP string) *P2PPropagationLog {
+func SimulatePropagation(data *net.Data, N int, delay time.Duration, startNodeIP string) []*LogEntry {
 	startIdx, err := findNode(data.Nodes, startNodeIP)
 	if err != nil {
 		log.Fatal(err)
 	}
 	s := NewSimulator(data, N, delay)
-	s.Run(startIdx)
-
-	ret := &P2PPropagationLog{}
-	return ret
+	return s.Run(startIdx)
 }
 
 // findNode is a helper for finding node index by it's IP address.

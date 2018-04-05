@@ -32,6 +32,9 @@ func PrecalculatePeers(data *net.Data) map[int][]int {
 
 	ret := make(map[int][]int)
 	for _, link := range links {
+		if link.From == link.To {
+			continue
+		}
 		if _, ok := ret[link.From]; !ok {
 			ret[link.From] = make([]int, 0)
 		}

@@ -1,7 +1,7 @@
 package p2p
 
 import (
-	"log"
+	"fmt"
 	"sync"
 	"time"
 
@@ -10,14 +10,15 @@ import (
 
 // Simulator is responsible for running propagation simulation.
 type Simulator struct {
-	data          *net.Data
-	delay         time.Duration
-	links         []LinkIndex
-	peers         map[int][]int
-	nodesCh       []chan Message
-	reportCh      chan int
-	peersToSendTo int // number of peers to propagate message
-	wg            sync.WaitGroup
+	data            *net.Data
+	delay           time.Duration
+	links           []LinkIndex
+	peers           map[int][]int
+	nodesCh         []chan Message
+	reportCh        chan LogEntry
+	peersToSendTo   int // number of peers to propagate message
+	wg              sync.WaitGroup
+	simulationStart time.Time
 }
 
 // Message represents the message propagated in the simulation.
@@ -34,7 +35,7 @@ func NewSimulator(data *net.Data, N int, delay time.Duration) *Simulator {
 		delay:         delay,
 		peers:         PrecalculatePeers(data),
 		peersToSendTo: N,
-		reportCh:      make(chan int),
+		reportCh:      make(chan LogEntry),
 		nodesCh:       make([]chan Message, nodeCount), // one channel per node
 	}
 	sim.wg.Add(N)
@@ -45,13 +46,30 @@ func NewSimulator(data *net.Data, N int, delay time.Duration) *Simulator {
 	return sim
 }
 
-func (s *Simulator) Run(startNodeIdx int) {
+func (s *Simulator) Run(startNodeIdx int) []*LogEntry {
 	message := Message{
 		Content: []byte("dummy"),
 		TTL:     10,
 	}
+	s.simulationStart = time.Now()
 	s.propagateMessage(startNodeIdx, message)
-	s.wg.Wait()
+
+	done := make(chan bool)
+	go func() {
+		s.wg.Wait()
+		done <- true
+	}()
+
+	var ret []*LogEntry
+	for {
+		select {
+		case val := <-s.reportCh:
+			ret = append(ret, &val)
+		case <-done:
+			return ret
+		}
+	}
+	return ret
 }
 
 func (s *Simulator) startNode(i int) chan Message {
@@ -64,7 +82,6 @@ func (s *Simulator) startNode(i int) chan Message {
 func (s *Simulator) runNode(i int, ch chan Message) {
 	defer s.wg.Done()
 	for message := range ch {
-		log.Printf("Node %d received message %s with TTL %d", i, message.Content, message.TTL)
 		message.TTL--
 		if message.TTL == 0 {
 			break
@@ -82,8 +99,22 @@ func (s *Simulator) propagateMessage(from int, message Message) {
 	}
 }
 
+type LogEntry struct {
+	From int
+	To   int
+	Ts   time.Duration
+}
+
+func (l LogEntry) String() string {
+	return fmt.Sprintf("%s: %d -> %d", l.Ts.String(), l.From, l.To)
+}
+
 // sendMessage simulates message sending for given from and to indexes.
 func (s *Simulator) sendMessage(from, to int, message Message) {
 	s.nodesCh[to] <- message
-	// report sending here to be added to the log
+	s.reportCh <- LogEntry{
+		Ts:   time.Since(s.simulationStart) / time.Millisecond,
+		From: from,
+		To:   to,
+	}
 }
