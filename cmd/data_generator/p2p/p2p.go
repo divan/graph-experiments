@@ -21,13 +21,13 @@ type PropagationLog struct {
 // each delay.
 // Simulation assumes that links are all of equal length and propagation takes
 // fixed amount of time for now.
-func SimulatePropagation(data *net.Data, N int, delay time.Duration, startNodeIP string) *PropagationLog {
+func SimulatePropagation(data *net.Data, N, ttl int, delay time.Duration, startNodeIP string) *PropagationLog {
 	startIdx, err := findNode(data.Nodes, startNodeIP)
 	if err != nil {
 		log.Fatal(err)
 	}
 	s := NewSimulator(data, N, delay)
-	logEntries := s.Run(startIdx)
+	logEntries := s.Run(startIdx, ttl)
 	return s.LogEntries2PropagationLog(logEntries)
 }
 

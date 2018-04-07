@@ -47,10 +47,10 @@ func NewSimulator(data *net.Data, N int, delay time.Duration) *Simulator {
 	return sim
 }
 
-func (s *Simulator) Run(startNodeIdx int) []*LogEntry {
+func (s *Simulator) Run(startNodeIdx, ttl int) []*LogEntry {
 	message := Message{
 		Content: []byte("dummy"),
-		TTL:     10,
+		TTL:     ttl,
 	}
 	s.simulationStart = time.Now()
 	s.propagateMessage(startNodeIdx, message)

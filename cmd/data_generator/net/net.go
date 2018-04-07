@@ -52,12 +52,13 @@ func GenerateNetwork(hosts, conn int) *Data {
 			link := &Link{
 				From: data.Nodes[i].IP,
 			}
+
 			// use uniform distribution for now
 			idx := rand.Intn(len(data.Nodes) - 1)
-			if data.linkExists(data.Nodes[idx].IP, data.Nodes[i].IP) {
+			if idx == i || data.linkExists(data.Nodes[idx].IP, data.Nodes[i].IP) {
 				idx = rand.Intn(len(data.Nodes) - 1)
-				if data.linkExists(data.Nodes[idx].IP, data.Nodes[i].IP) {
-					idx = rand.Intn(len(data.Nodes) - 1)
+				if idx == i || data.linkExists(data.Nodes[idx].IP, data.Nodes[i].IP) {
+					continue
 				}
 			}
 

@@ -18,6 +18,7 @@ func main() {
 		netConns         = flag.Int("net.connections", 4, "Number of connections between hosts for net generator")
 		p2pSendN         = flag.Int("p2psend.N", 3, "Number of peers to propagate (0..N of peers)")
 		p2pSendDelay     = flag.Duration("p2psend.delay", 10*time.Millisecond, "Delay for each step")
+		p2pSendTTL       = flag.Int("p2psend.ttl", 10, "Message TTL")
 		p2pSendStartNode = flag.String("p2psend.startNode", "192.168.1.2", "IP address of node initiating the sending")
 		output           = flag.String("o", "data.json", "Output filename for network data")
 		p2pOutput        = flag.String("p", "propagation.json", "Output filename for p2p sending data")
@@ -53,7 +54,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		sendData := p2p.SimulatePropagation(data, *p2pSendN, *p2pSendDelay, *p2pSendStartNode)
+		sendData := p2p.SimulatePropagation(data, *p2pSendN, *p2pSendTTL, *p2pSendDelay, *p2pSendStartNode)
 		err = json.NewEncoder(p2pFd).Encode(sendData)
 		if err != nil {
 			log.Fatal(err)
