@@ -2,18 +2,21 @@ package layout
 
 import "fmt"
 
+// ForceVector represents the force vector in 3D space.
 type ForceVector struct {
 	DX float64 `json:"dx"`
 	DY float64 `json:"dy"`
 	DZ float64 `json:"dz"`
 }
 
+// Force defines the methods for physical force.
 type Force interface {
 	Name() string
 	Apply(from, to *Point) *ForceVector
 	ByRule() ForceRule
 }
 
+// String implements Stringer interface for ForceVector.
 func (f ForceVector) String() string {
 	return fmt.Sprintf("f(%.03f, %.03f, %.03f)", f.DX, f.DY, f.DZ)
 }

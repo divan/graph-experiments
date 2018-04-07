@@ -253,11 +253,11 @@ func (o *Octree) calcForce(from *leaf, to octant) *ForceVector {
 
 		if float64(width)/float64(r) < theta {
 			return o.force.Apply(from.Center(), to.Center())
-		} else {
-			for i, _ := range toNode.leafs {
-				f := o.calcForce(from, toNode.leafs[i])
-				ret.Add(f)
-			}
+		}
+
+		for i := range toNode.leafs {
+			f := o.calcForce(from, toNode.leafs[i])
+			ret.Add(f)
 		}
 	}
 	return ret

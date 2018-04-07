@@ -13,6 +13,7 @@ import (
 // call the system stable
 const stableThreshold = 1.001
 
+// Layout represents physical layout used to process graph.
 type Layout interface {
 	Nodes() []*Node
 	Calculate()
@@ -23,11 +24,14 @@ type Layout interface {
 	ListForces() []Force
 }
 
+// LayoutWithDebug extends Layout interface with additional debug data methods.
+// TODO(divan): this should be a static type, not an interface.
 type LayoutWithDebug interface {
 	Layout
 	ForcesDebugData() ForcesDebugData
 }
 
+// Layout3D implements Layout interface for force-directed 3D graph.
 type Layout3D struct {
 	data *graph.Data
 
@@ -39,8 +43,7 @@ type Layout3D struct {
 	forcesDebugData ForcesDebugData
 }
 
-// Init initializes layout with nodes data. It assigns
-// semi-random positions to nodes to facilitate further simulation.
+// New initializes layout with nodes data.
 func New(data *graph.Data, forces ...Force) LayoutWithDebug {
 	l := &Layout3D{
 		data:            data,
@@ -130,22 +133,27 @@ func (l *Layout3D) resetForces() {
 	l.forcesDebugData = make(ForcesDebugData)
 }
 
+// AddForce adds force to the internal list of forces.
 func (l *Layout3D) AddForce(f Force) {
 	l.forces = append(l.forces, f)
 }
 
+// ListForces returns the list of active forces.
 func (l *Layout3D) ListForces() []Force {
 	return l.forces
 }
 
+// Nodes returns nodes information.
 func (l *Layout3D) Nodes() []*Node {
 	return l.nodes
 }
 
+// ForcesDebugData returns debug data with forces.
 func (l *Layout3D) ForcesDebugData() ForcesDebugData {
 	return l.forcesDebugData
 }
 
+// Links returns graph data links.
 func (l *Layout3D) Links() []*graph.LinkData {
 	return l.links
 }

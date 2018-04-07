@@ -40,6 +40,6 @@ func (s *SpringForce) Name() string {
 }
 
 // ByRule returns rule function to apply rules.
-func (g *SpringForce) ByRule() ForceRule {
-	return g.rule
+func (s *SpringForce) ByRule() ForceRule {
+	return s.rule
 }
