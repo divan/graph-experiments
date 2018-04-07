@@ -11,7 +11,7 @@ import (
 
 // stableThreshold determines the movement diff needed to
 // call the system stable
-const stableThreshold = 12.0
+const stableThreshold = 1.001
 
 type Layout interface {
 	Nodes() []*Node

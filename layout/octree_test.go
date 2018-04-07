@@ -3,8 +3,8 @@ package layout
 import "testing"
 
 func TestInsert(t *testing.T) {
-	o := NewOctree()
-	p1 := &Point{1, 1, 1, 1, 10}
+	o := NewOctree(NewGravityForce(-10, BarneHutMethod))
+	p1 := &Point{Idx: 1, X: 1, Y: 1, Z: 1, Mass: 10}
 	o.Insert(p1)
 
 	if o.root == nil {
@@ -16,11 +16,11 @@ func TestInsert(t *testing.T) {
 		t.Fatalf("Expected center to be %v, but got %v", p1, center)
 	}
 
-	p2 := &Point{2, 9, 9, 9, 10}
+	p2 := &Point{Idx: 2, X: 9, Y: 9, Z: 9, Mass: 10}
 	o.Insert(p2)
 
 	center = o.root.Center()
-	expected := &Point{0, 5, 5, 5, 20}
+	expected := &Point{Idx: 0, X: 5, Y: 5, Z: 5, Mass: 20}
 	if *center != *expected {
 		t.Fatalf("Expected center to be %v, but got %v", expected, center)
 	}
@@ -49,7 +49,7 @@ func TestFindOctantIdx(t *testing.T) {
 		},
 	}
 
-	o := newLeaf(&Point{0, 5, 5, 5, 1})
+	o := newLeaf(&Point{X: 5, Y: 5, Z: 5, Mass: 1})
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			idx := findOctantIdx(o, test.p)
@@ -61,9 +61,8 @@ func TestFindOctantIdx(t *testing.T) {
 }
 
 func TestLeafInsert(t *testing.T) {
-	p1 := &Point{0, 1, 1, 1, 1}
-	p2 := &Point{1, -1, -1, -1, 1}
-	_ = p2
+	p1 := &Point{X: 1, Y: 1, Z: 1, Mass: 1}
+	p2 := &Point{Idx: 1, X: -1, Y: -1, Z: -1, Mass: 1}
 	l := newLeaf(p1)
 	center := l.Center()
 	if center != p1 {
@@ -71,20 +70,20 @@ func TestLeafInsert(t *testing.T) {
 	}
 	node := l.Insert(p2)
 	center = node.Center()
-	expected := &Point{0, 0, 0, 0, 2}
+	expected := &Point{Mass: 2} // zero coords
 	if *center != *expected {
 		t.Fatalf("Expected %v, but got %v", expected, center)
 	}
 }
 
 func TestBugCase1(t *testing.T) {
-	o := NewOctree()
+	o := NewOctree(NewGravityForce(-10, BarneHutMethod))
 	points := []*Point{
-		&Point{0, -2, 4, 1, 2},
-		&Point{1, -6, 4, -1, 2},
-		&Point{2, -1, -13, 3, 2},
-		&Point{3, 14, 14, 5, 2},
-		&Point{4, -19, -5, 9, 2},
+		&Point{Idx: 0, X: -2, Y: 4, Z: 1, Mass: 2},
+		&Point{Idx: 1, X: -6, Y: 4, Z: -1, Mass: 2},
+		&Point{Idx: 2, X: -1, Y: -13, Z: 3, Mass: 2},
+		&Point{Idx: 3, X: 14, Y: 14, Z: 5, Mass: 2},
+		&Point{Idx: 4, X: -19, Y: -5, Z: 9, Mass: 2},
 	}
 	for i := 0; i < 5; i++ {
 		o.Insert(points[i])
