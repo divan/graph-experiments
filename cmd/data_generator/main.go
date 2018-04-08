@@ -46,8 +46,8 @@ func main() {
 
 	var generator Generator
 	switch *dataKind {
-	case "net":
-		generator = net.NewDummyGenerator(*nodes, *netConns, "192.168.1.1", net.Uniform)
+	case "net", "p2psend": // TODO: move "p2psend" to different flag and make generator optional
+		generator = net.NewDummyGenerator(*nodes, *netConns, "192.168.1.1", net.Exact)
 	case "line":
 		generator = basic.NewLineGenerator(*nodes)
 	case "circle":
