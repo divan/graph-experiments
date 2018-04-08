@@ -7,9 +7,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/divan/graph-experiments/cmd/data_generator/net"
 	"github.com/divan/graph-experiments/cmd/data_generator/p2p"
+	"github.com/divan/graph-experiments/generator/net"
+	"github.com/divan/graph-experiments/graph"
 )
+
+type Generator interface {
+	Generate() *graph.Data
+}
 
 func main() {
 	var (
@@ -38,22 +43,19 @@ func main() {
 	}
 	defer p2pFd.Close()
 
+	var generator Generator
 	if *dataKind == "net" {
-		data := net.GenerateNetwork(*netHosts, *netConns)
-		err := json.NewEncoder(netFd).Encode(data)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Println("Written network graph into", *output)
+		generator = net.NewDummyGenerator(*netHosts, *netConns, "192.168.1.1", net.Uniform)
 	}
 
-	if *dataKind == "p2psend" {
-		data := net.GenerateNetwork(*netHosts, *netConns)
-		err := json.NewEncoder(netFd).Encode(data)
-		if err != nil {
-			log.Fatal(err)
-		}
+	data := generator.Generate()
+	err = json.NewEncoder(netFd).Encode(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Written graph into", *output)
 
+	if *dataKind == "p2psend" {
 		sendData := p2p.SimulatePropagation(data, *p2pSendN, *p2pSendTTL, *p2pSendDelay, *p2pSendStartNode)
 		err = json.NewEncoder(p2pFd).Encode(sendData)
 		if err != nil {

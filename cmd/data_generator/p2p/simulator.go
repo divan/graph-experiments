@@ -4,12 +4,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/divan/graph-experiments/cmd/data_generator/net"
+	"github.com/divan/graph-experiments/graph"
 )
 
 // Simulator is responsible for running propagation simulation.
 type Simulator struct {
-	data            *net.Data
+	data            *graph.Data
 	delay           time.Duration
 	links           []LinkIndex
 	peers           map[int][]int
@@ -27,7 +27,7 @@ type Message struct {
 }
 
 // NewSimulator initializes new simulator.
-func NewSimulator(data *net.Data, N int, delay time.Duration) *Simulator {
+func NewSimulator(data *graph.Data, N int, delay time.Duration) *Simulator {
 	nodeCount := len(data.Nodes)
 	sim := &Simulator{
 		data:          data,

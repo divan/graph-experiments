@@ -12,7 +12,7 @@ import (
 type ForceRule func(
 	force Force,
 	nodes []*Node,
-	links []*graph.LinkData,
+	links []*graph.Link,
 	vectors map[int]*ForceVector,
 	debugInfo ForcesDebugData)
 
@@ -20,7 +20,7 @@ type ForceRule func(
 var ForEachLink = func(
 	force Force,
 	nodes []*Node,
-	links []*graph.LinkData,
+	links []*graph.Link,
 	vectors map[int]*ForceVector,
 	debugInfo ForcesDebugData) {
 	for _, link := range links {
@@ -46,7 +46,7 @@ var ForEachLink = func(
 var BarneHutMethod = func(
 	force Force,
 	nodes []*Node,
-	links []*graph.LinkData,
+	links []*graph.Link,
 	vectors map[int]*ForceVector,
 	debugInfo ForcesDebugData) {
 
@@ -73,7 +73,7 @@ var BarneHutMethod = func(
 var ForEachNode = func(
 	force Force,
 	nodes []*Node,
-	links []*graph.LinkData,
+	links []*graph.Link,
 	vectors map[int]*ForceVector,
 	debugInfo ForcesDebugData) {
 	for i, node := range nodes {

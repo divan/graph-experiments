@@ -36,7 +36,7 @@ type Layout3D struct {
 	data *graph.Data
 
 	nodes  []*Node
-	links  []*graph.LinkData
+	links  []*graph.Link
 	forces []Force
 
 	forceVectors    map[int]*ForceVector // cumulative force per node ID
@@ -154,6 +154,6 @@ func (l *Layout3D) ForcesDebugData() ForcesDebugData {
 }
 
 // Links returns graph data links.
-func (l *Layout3D) Links() []*graph.LinkData {
+func (l *Layout3D) Links() []*graph.Link {
 	return l.links
 }

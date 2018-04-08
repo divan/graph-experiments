@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/divan/graph-experiments/cmd/data_generator/net"
+	"github.com/divan/graph-experiments/graph"
 )
 
 // PropagationLog represnts log of p2p message propagation
@@ -21,7 +21,7 @@ type PropagationLog struct {
 // each delay.
 // Simulation assumes that links are all of equal length and propagation takes
 // fixed amount of time for now.
-func SimulatePropagation(data *net.Data, N, ttl int, delay time.Duration, startNodeIP string) *PropagationLog {
+func SimulatePropagation(data *graph.Data, N, ttl int, delay time.Duration, startNodeIP string) *PropagationLog {
 	startIdx, err := findNode(data.Nodes, startNodeIP)
 	if err != nil {
 		log.Fatal(err)
@@ -32,9 +32,9 @@ func SimulatePropagation(data *net.Data, N, ttl int, delay time.Duration, startN
 }
 
 // findNode is a helper for finding node index by it's IP address.
-func findNode(nodes []*net.Node, IP string) (int, error) {
+func findNode(nodes []*graph.Node, IP string) (int, error) {
 	for i := range nodes {
-		if nodes[i].IP == IP {
+		if nodes[i].ID == IP {
 			return i, nil
 		}
 	}

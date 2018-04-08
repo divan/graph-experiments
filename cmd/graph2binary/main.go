@@ -29,7 +29,7 @@ func main() {
 	log.Printf("Initializing layout...")
 	layout := layout.New(data)
 	log.Printf("Calculating layout...")
-	layout.Calculate(*iterations)
+	layout.CalculateN(*iterations)
 
 	log.Printf("Writing output to %s...\n", *dir)
 	err = ngraph.Save(layout, data)
