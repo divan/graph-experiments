@@ -16,8 +16,8 @@ type Data struct {
 // Node represents single node of the graph.
 type Node struct {
 	ID     string `json:"id"`
-	Group  int    `json:"group"`
-	Weight int32  `json:"weight"`
+	Group  int    `json:"group,omitempty"`
+	Weight int32  `json:"weight,omitempty"`
 }
 
 // Link represents single link between two nodes.

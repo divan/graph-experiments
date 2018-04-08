@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/divan/graph-experiments/cmd/data_generator/p2p"
+	"github.com/divan/graph-experiments/generator/basic"
 	"github.com/divan/graph-experiments/generator/net"
 	"github.com/divan/graph-experiments/graph"
 )
@@ -18,7 +19,7 @@ type Generator interface {
 
 func main() {
 	var (
-		dataKind         = flag.String("type", "net", "Example random IPs network (net, p2psend)")
+		dataKind         = flag.String("type", "net", "Example random IPs network (net, line)")
 		netHosts         = flag.Int("net.hosts", 20, "Number of hosts for net generator")
 		netConns         = flag.Int("net.connections", 4, "Number of connections between hosts for net generator")
 		p2pSendN         = flag.Int("p2psend.N", 3, "Number of peers to propagate (0..N of peers)")
@@ -46,6 +47,8 @@ func main() {
 	var generator Generator
 	if *dataKind == "net" {
 		generator = net.NewDummyGenerator(*netHosts, *netConns, "192.168.1.1", net.Uniform)
+	} else if *dataKind == "line" {
+		generator = basic.NewLineGenerator(10)
 	}
 
 	data := generator.Generate()
