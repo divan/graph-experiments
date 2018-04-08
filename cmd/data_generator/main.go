@@ -20,7 +20,7 @@ type Generator interface {
 func main() {
 	var (
 		dataKind         = flag.String("type", "net", "Example random IPs network (net, line)")
-		netHosts         = flag.Int("net.hosts", 20, "Number of hosts for net generator")
+		nodes            = flag.Int("n", 20, "Number of nodes")
 		netConns         = flag.Int("net.connections", 4, "Number of connections between hosts for net generator")
 		p2pSendN         = flag.Int("p2psend.N", 3, "Number of peers to propagate (0..N of peers)")
 		p2pSendDelay     = flag.Duration("p2psend.delay", 10*time.Millisecond, "Delay for each step")
@@ -47,11 +47,11 @@ func main() {
 	var generator Generator
 	switch *dataKind {
 	case "net":
-		generator = net.NewDummyGenerator(*netHosts, *netConns, "192.168.1.1", net.Uniform)
+		generator = net.NewDummyGenerator(*nodes, *netConns, "192.168.1.1", net.Uniform)
 	case "line":
-		generator = basic.NewLineGenerator(10)
+		generator = basic.NewLineGenerator(*nodes)
 	case "circle":
-		generator = basic.NewCircleGenerator(10)
+		generator = basic.NewCircleGenerator(*nodes)
 	}
 
 	data := generator.Generate()
