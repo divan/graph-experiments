@@ -45,10 +45,13 @@ func main() {
 	defer p2pFd.Close()
 
 	var generator Generator
-	if *dataKind == "net" {
+	switch *dataKind {
+	case "net":
 		generator = net.NewDummyGenerator(*netHosts, *netConns, "192.168.1.1", net.Uniform)
-	} else if *dataKind == "line" {
+	case "line":
 		generator = basic.NewLineGenerator(10)
+	case "circle":
+		generator = basic.NewCircleGenerator(10)
 	}
 
 	data := generator.Generate()
