@@ -52,6 +52,8 @@ func main() {
 		generator = basic.NewLineGenerator(*nodes)
 	case "circle":
 		generator = basic.NewCircleGenerator(*nodes)
+	case "grid":
+		generator = basic.NewGrid2DGeneratorN(*nodes)
 	}
 
 	data := generator.Generate()
