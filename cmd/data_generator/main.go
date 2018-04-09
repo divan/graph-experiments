@@ -19,13 +19,14 @@ type Generator interface {
 
 func main() {
 	var (
-		dataKind         = flag.String("type", "net", "Example random IPs network (net, line)")
+		dataKind         = flag.String("type", "net", "Example random IPs network (net, line, circle, grid, grid3d)")
+		propagate        = flag.Bool("propagate", false, "Run propagation simulation")
 		nodes            = flag.Int("n", 20, "Number of nodes")
 		netConns         = flag.Int("net.connections", 4, "Number of connections between hosts for net generator")
-		p2pSendN         = flag.Int("p2psend.N", 3, "Number of peers to propagate (0..N of peers)")
-		p2pSendDelay     = flag.Duration("p2psend.delay", 10*time.Millisecond, "Delay for each step")
-		p2pSendTTL       = flag.Int("p2psend.ttl", 10, "Message TTL")
-		p2pSendStartNode = flag.String("p2psend.startNode", "192.168.1.2", "IP address of node initiating the sending")
+		p2pSendN         = flag.Int("propagate.N", 3, "Number of peers to propagate (0..N of peers)")
+		p2pSendDelay     = flag.Duration("propagate.delay", 10*time.Millisecond, "Delay for each step")
+		p2pSendTTL       = flag.Int("propagate.ttl", 10, "Message TTL")
+		p2pSendStartNode = flag.String("propagate.startNode", "192.168.1.2", "IP address of node initiating the sending")
 		output           = flag.String("o", "data.json", "Output filename for network data")
 		p2pOutput        = flag.String("p", "propagation.json", "Output filename for p2p sending data")
 	)
@@ -46,7 +47,7 @@ func main() {
 
 	var generator Generator
 	switch *dataKind {
-	case "net", "p2psend": // TODO: move "p2psend" to different flag and make generator optional
+	case "net": // TODO: move "p2psend" to different flag and make generator optional
 		generator = net.NewDummyGenerator(*nodes, *netConns, "192.168.1.1", net.Exact)
 	case "line":
 		generator = basic.NewLineGenerator(*nodes)
@@ -54,6 +55,8 @@ func main() {
 		generator = basic.NewCircleGenerator(*nodes)
 	case "grid":
 		generator = basic.NewGrid2DGeneratorN(*nodes)
+	case "grid3d":
+		generator = basic.NewGrid3DGeneratorN(*nodes)
 	}
 
 	data := generator.Generate()
@@ -63,7 +66,7 @@ func main() {
 	}
 	log.Println("Written graph into", *output)
 
-	if *dataKind == "p2psend" {
+	if *propagate {
 		sendData := p2p.SimulatePropagation(data, *p2pSendN, *p2pSendTTL, *p2pSendDelay, *p2pSendStartNode)
 		err = json.NewEncoder(p2pFd).Encode(sendData)
 		if err != nil {
