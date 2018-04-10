@@ -10,7 +10,7 @@ import (
 	"github.com/divan/graph-experiments/generator/basic"
 	"github.com/divan/graph-experiments/generator/net"
 	"github.com/divan/graph-experiments/graph"
-	"github.com/divan/graph-experiments/simulation/p2p"
+	"github.com/divan/graph-experiments/simulation/naivep2p"
 )
 
 type Generator interface {
@@ -47,7 +47,7 @@ func main() {
 
 	var generator Generator
 	switch *dataKind {
-	case "net": // TODO: move "p2psend" to different flag and make generator optional
+	case "net":
 		generator = net.NewDummyGenerator(*nodes, *netConns, "192.168.1.1", net.Exact)
 	case "line":
 		generator = basic.NewLineGenerator(*nodes)
@@ -67,7 +67,7 @@ func main() {
 	log.Println("Written graph into", *output)
 
 	if *propagate {
-		sendData := p2p.SimulatePropagation(data, *p2pSendN, *p2pSendTTL, *p2pSendDelay, *p2pSendStartNode)
+		sendData := naivep2p.SimulatePropagation(data, *p2pSendN, *p2pSendTTL, *p2pSendDelay, *p2pSendStartNode)
 		err = json.NewEncoder(p2pFd).Encode(sendData)
 		if err != nil {
 			log.Fatal(err)

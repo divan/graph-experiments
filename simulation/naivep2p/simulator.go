@@ -84,7 +84,7 @@ func (s *Simulator) startNode(i int) chan Message {
 // runNode does actual node processing part
 func (s *Simulator) runNode(i int, ch chan Message) {
 	defer s.wg.Done()
-	t := time.NewTimer(4 * time.Second)
+	t := time.NewTimer(10 * time.Second)
 
 	cache := make(map[string]bool)
 	for {
