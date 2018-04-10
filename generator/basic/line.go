@@ -1,8 +1,6 @@
 package basic
 
 import (
-	"fmt"
-
 	"github.com/divan/graph-experiments/graph"
 )
 
@@ -23,23 +21,12 @@ func (l *LineGenerator) Generate() *graph.Data {
 	data := graph.NewData()
 
 	for i := 0; i < l.nodes; i++ {
-		node := &graph.Node{
-			ID: l.idxToID(i),
-		}
-		data.Nodes = append(data.Nodes, node)
+		addNode(data, i)
 
 		if i != l.nodes-1 {
-			link := &graph.Link{
-				Source: l.idxToID(i),
-				Target: l.idxToID(i + 1),
-			}
-			data.Links = append(data.Links, link)
+			addLink(data, i, i+1)
 		}
 	}
 
 	return data
-}
-
-func (l *LineGenerator) idxToID(i int) string {
-	return fmt.Sprintf("Node %d", i)
 }

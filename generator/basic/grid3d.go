@@ -1,7 +1,6 @@
 package basic
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/divan/graph-experiments/graph"
@@ -53,39 +52,20 @@ func (l *Grid3DGenerator) Generate() *graph.Data {
 			for j := 0; j < l.cols; j++ {
 				level := k * l.rows * l.cols
 				idx := i + j*l.rows + level
-				node := &graph.Node{
-					ID: l.idxToID(idx),
-				}
-				data.Nodes = append(data.Nodes, node)
+				addNode(data, idx)
 
 				if i > 0 {
-					link := &graph.Link{
-						Source: l.idxToID(idx),
-						Target: l.idxToID(i - 1 + j*l.rows + level),
-					}
-					data.Links = append(data.Links, link)
+					addLink(data, idx, i-1+j*l.rows+level)
 				}
 				if j > 0 {
-					link := &graph.Link{
-						Source: l.idxToID(idx),
-						Target: l.idxToID(i + (j-1)*l.rows + level),
-					}
-					data.Links = append(data.Links, link)
+					addLink(data, idx, i+(j-1)*l.rows+level)
 				}
 				if k > 0 {
-					link := &graph.Link{
-						Source: l.idxToID(idx),
-						Target: l.idxToID(i + j*l.rows + (k-1)*l.rows*l.cols),
-					}
-					data.Links = append(data.Links, link)
+					addLink(data, idx, i+j*l.rows+(k-1)*l.rows*l.cols)
 				}
 			}
 		}
 	}
 
 	return data
-}
-
-func (l *Grid3DGenerator) idxToID(i int) string {
-	return fmt.Sprintf("Node %d", i)
 }

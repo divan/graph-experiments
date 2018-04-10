@@ -1,7 +1,6 @@
 package basic
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/divan/graph-experiments/graph"
@@ -53,31 +52,16 @@ func (l *Grid2DGenerator) Generate() *graph.Data {
 	for i := 0; i < l.rows; i++ {
 		for j := 0; j < l.cols; j++ {
 			idx := i + j*l.rows
-			node := &graph.Node{
-				ID: l.idxToID(idx),
-			}
-			data.Nodes = append(data.Nodes, node)
+			addNode(data, idx)
 
 			if i > 0 {
-				link := &graph.Link{
-					Source: l.idxToID(idx),
-					Target: l.idxToID(i - 1 + j*l.rows),
-				}
-				data.Links = append(data.Links, link)
+				addLink(data, idx, i-1+j*l.rows)
 			}
 			if j > 0 {
-				link := &graph.Link{
-					Source: l.idxToID(idx),
-					Target: l.idxToID(i + (j-1)*l.rows),
-				}
-				data.Links = append(data.Links, link)
+				addLink(data, idx, i+(j-1)*l.rows)
 			}
 		}
 	}
 
 	return data
-}
-
-func (l *Grid2DGenerator) idxToID(i int) string {
-	return fmt.Sprintf("Node %d", i)
 }
