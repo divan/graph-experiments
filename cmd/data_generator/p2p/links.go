@@ -40,10 +40,17 @@ func PrecalculatePeers(data *graph.Data) map[int][]int {
 		if _, ok := ret[link.From]; !ok {
 			ret[link.From] = make([]int, 0)
 		}
+		if _, ok := ret[link.To]; !ok {
+			ret[link.To] = make([]int, 0)
+		}
 
 		peers := ret[link.From]
 		peers = append(peers, link.To)
 		ret[link.From] = peers
+
+		peers = ret[link.To]
+		peers = append(peers, link.From)
+		ret[link.To] = peers
 	}
 	return ret
 }

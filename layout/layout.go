@@ -110,8 +110,20 @@ func (l *Layout3D) Calculate() {
 
 // CalculateN run positions' recalculations exactly N times.
 func (l *Layout3D) CalculateN(n int) {
+	fmt.Println("Simulation started...")
+	var (
+		now    = time.Now()
+		count  int
+		prevTx float64
+		tx     = math.MaxFloat64
+	)
 	for i := 0; i < n; i++ {
-		l.UpdatePositions()
+		prevTx = tx
+		tx = l.UpdatePositions()
+		count++
+		log.Println("PrevTx, tx:", tx, ", diff:", math.Abs(tx-prevTx))
+		since := time.Since(now)
+		fmt.Printf("Iterations: %d, tx: %f, time: %v\n", count, tx, since)
 	}
 }
 

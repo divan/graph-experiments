@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -22,7 +23,7 @@ type Simulator struct {
 
 // Message represents the message propagated in the simulation.
 type Message struct {
-	Content []byte
+	Content string
 	TTL     int
 }
 
@@ -39,6 +40,8 @@ func NewSimulator(data *graph.Data, N int, delay time.Duration) *Simulator {
 		nodesCh:       make([]chan Message, nodeCount), // one channel per node
 		wg:            new(sync.WaitGroup),
 	}
+	fmt.Println("[DD] Peers", sim.peers)
+	fmt.Println("[DD] Links", sim.links)
 	sim.wg.Add(nodeCount)
 	for i := 0; i < nodeCount; i++ {
 		ch := sim.startNode(i)
@@ -49,7 +52,7 @@ func NewSimulator(data *graph.Data, N int, delay time.Duration) *Simulator {
 
 func (s *Simulator) Run(startNodeIdx, ttl int) []*LogEntry {
 	message := Message{
-		Content: []byte("dummy"),
+		Content: "dummy",
 		TTL:     ttl,
 	}
 	s.simulationStart = time.Now()
@@ -82,9 +85,15 @@ func (s *Simulator) startNode(i int) chan Message {
 func (s *Simulator) runNode(i int, ch chan Message) {
 	defer s.wg.Done()
 	t := time.NewTimer(4 * time.Second)
+
+	cache := make(map[string]bool)
 	for {
 		select {
 		case message := <-ch:
+			if cache[message.Content] {
+				continue
+			}
+			cache[message.Content] = true
 			message.TTL--
 			if message.TTL == 0 {
 				return

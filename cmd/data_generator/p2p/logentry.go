@@ -34,7 +34,8 @@ func NewLogEntry(start time.Time, from, to int) LogEntry {
 func (s *Simulator) LogEntries2PropagationLog(entries []*LogEntry) *PropagationLog {
 	findLink := func(from, to int) int {
 		for i := range s.links {
-			if s.links[i].From == from && s.links[i].To == to {
+			if s.links[i].From == from && s.links[i].To == to ||
+				s.links[i].To == from && s.links[i].From == to {
 				return i
 			}
 		}
