@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/divan/graph-experiments/cmd/data_generator/p2p"
 	"github.com/divan/graph-experiments/generator/basic"
 	"github.com/divan/graph-experiments/generator/net"
 	"github.com/divan/graph-experiments/graph"
+	"github.com/divan/graph-experiments/simulation/p2p"
 )
 
 type Generator interface {
