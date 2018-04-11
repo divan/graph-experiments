@@ -1,6 +1,5 @@
 package whisperv6
 
-/*
 import (
 	"math/rand"
 
@@ -48,4 +47,3 @@ func generateMessage(ttl int) *whisperv6.Envelope {
 
 	return env
 }
-*/

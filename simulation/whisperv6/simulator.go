@@ -17,13 +17,16 @@ import (
 // Simulator simulates WhisperV6 message propagation through the
 // given p2p network.
 type Simulator struct {
-	data    *graph.Data
-	network *simulations.Network
-	nodes   []*simulations.Node
+	data     *graph.Data
+	network  *simulations.Network
+	nodes    []*simulations.Node
+	whispers map[discover.NodeID]*whisper.Whisper
 }
 
 // NewSimulator intializes simulator for the given graph data.
 func NewSimulator(data *graph.Data) *Simulator {
+	whispers := make(map[discover.NodeID]*whisper.Whisper)
+
 	cfg := &whisper.Config{
 		MaxMessageSize:     whisper.DefaultMaxMessageSize,
 		MinimumAcceptedPOW: 0.001,
@@ -32,7 +35,10 @@ func NewSimulator(data *graph.Data) *Simulator {
 		"shh": func(ctx *adapters.ServiceContext) (node.Service, error) {
 			// it's important to init whisper service here, as it
 			// be initialized for each peer
-			return whisper.New(cfg), nil
+			id := ctx.Config.ID
+			service := whisper.New(cfg)
+			whispers[id] = service
+			return service, nil
 		},
 	}
 	adapters.RegisterServices(services)
@@ -44,9 +50,10 @@ func NewSimulator(data *graph.Data) *Simulator {
 
 	nodeCount := len(data.Nodes)
 	sim := &Simulator{
-		data:    data,
-		network: network,
-		nodes:   make([]*simulations.Node, nodeCount),
+		data:     data,
+		network:  network,
+		nodes:    make([]*simulations.Node, nodeCount),
+		whispers: whispers,
 	}
 
 	log.Println("Creating nodes...")
@@ -96,6 +103,17 @@ func (s *Simulator) Stop() error {
 
 // SendMessage sends single message and tracks propagation. Implements simulator.Interface.
 func (s *Simulator) SendMessage(startNodeIdx, ttl int) *simulation.Log {
+	node := s.nodes[startNodeIdx]
+	service, ok := s.whispers[node.ID()]
+	if !ok {
+		log.Fatalf("Whisper service for node %d not found", startNodeIdx)
+	}
+
+	log.Println(" Sending Whisper message...")
+	msg := generateMessage(ttl)
+	err := service.Send(msg)
+	log.Println(" Error:", err)
+
 	return &simulation.Log{}
 }
 
