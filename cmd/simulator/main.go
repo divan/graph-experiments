@@ -50,6 +50,7 @@ func main() {
 	}
 
 	// Start simulation by sending single message
+	log.Printf("Starting message sending %s simulation for graph with %d nodes...", *simType, len(data.Nodes))
 	sendData := sim.SendMessage(startNodeIdx, *ttl)
 	err = json.NewEncoder(fd).Encode(sendData)
 	if err != nil {
