@@ -8,17 +8,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/divan/graph-experiments/generator/basic"
-	"github.com/divan/graph-experiments/generator/net"
+	"github.com/divan/graph-experiments/generation"
+	"github.com/divan/graph-experiments/generation/basic"
+	"github.com/divan/graph-experiments/generation/net"
 	"github.com/divan/graph-experiments/graph"
 	"github.com/divan/graph-experiments/simulation"
 	"github.com/divan/graph-experiments/simulation/naivep2p"
 	"github.com/divan/graph-experiments/simulation/whisperv6"
 )
-
-type Generator interface {
-	Generate() *graph.Data
-}
 
 func main() {
 	var (
@@ -49,21 +46,21 @@ func main() {
 	}
 	defer simFd.Close()
 
-	var generator Generator
+	var gen generation.GraphGenerator
 	switch *dataKind {
 	case "net":
-		generator = net.NewDummyGenerator(*nodes, *netConns, "192.168.1.1", net.Exact)
+		gen = net.NewDummyGenerator(*nodes, *netConns, "192.168.1.1", net.Exact)
 	case "line":
-		generator = basic.NewLineGenerator(*nodes)
+		gen = basic.NewLineGenerator(*nodes)
 	case "circle":
-		generator = basic.NewCircleGenerator(*nodes)
+		gen = basic.NewCircleGenerator(*nodes)
 	case "grid":
-		generator = basic.NewGrid2DGeneratorN(*nodes)
+		gen = basic.NewGrid2DGeneratorN(*nodes)
 	case "grid3d":
-		generator = basic.NewGrid3DGeneratorN(*nodes)
+		gen = basic.NewGrid3DGeneratorN(*nodes)
 	}
 
-	data := generator.Generate()
+	data := gen.Generate()
 	err = json.NewEncoder(netFd).Encode(data)
 	if err != nil {
 		log.Fatal(err)
