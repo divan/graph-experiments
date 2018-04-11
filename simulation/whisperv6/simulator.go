@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/p2p/discover"
 	"github.com/ethereum/go-ethereum/p2p/simulations"
 	"github.com/ethereum/go-ethereum/p2p/simulations/adapters"
+	whisper "github.com/ethereum/go-ethereum/whisper/whisperv6"
 )
 
 // Simulator simulates WhisperV6 message propagation through the
@@ -23,16 +24,21 @@ type Simulator struct {
 
 // NewSimulator intializes simulator for the given graph data.
 func NewSimulator(data *graph.Data) *Simulator {
+	cfg := &whisper.Config{
+		MaxMessageSize:     whisper.DefaultMaxMessageSize,
+		MinimumAcceptedPOW: 0.001,
+	}
+	whisperService := whisper.New(cfg)
 	services := map[string]adapters.ServiceFunc{
-		"ping-pong": func(ctx *adapters.ServiceContext) (node.Service, error) {
-			return newPingPongService(ctx.Config.ID), nil
+		"shh": func(ctx *adapters.ServiceContext) (node.Service, error) {
+			return whisperService, nil
 		},
 	}
 	adapters.RegisterServices(services)
 
 	adapter := adapters.NewSimAdapter(services)
 	network := simulations.NewNetwork(adapter, &simulations.NetworkConfig{
-		DefaultService: "ping-pong",
+		DefaultService: "shh",
 	})
 
 	nodeCount := len(data.Nodes)
@@ -71,6 +77,10 @@ func NewSimulator(data *graph.Data) *Simulator {
 		}
 		node1 := sim.nodes[fromIdx]
 		node2 := sim.nodes[toIdx]
+		// if connection already exists, skip it, as network.Connect will fail
+		if network.GetConn(node1.ID(), node2.ID()) != nil {
+			continue
+		}
 		if err := network.Connect(node1.ID(), node2.ID()); err != nil {
 			panic(err)
 		}
