@@ -1,7 +1,6 @@
 package naivep2p
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -27,7 +26,7 @@ type Message struct {
 	TTL     int
 }
 
-// NewSimulator initializes new simulator.
+// NewSimulator initializes new simulator for the given graph data.
 func NewSimulator(data *graph.Data, N int, delay time.Duration) *Simulator {
 	nodeCount := len(data.Nodes)
 	sim := &Simulator{
@@ -40,8 +39,6 @@ func NewSimulator(data *graph.Data, N int, delay time.Duration) *Simulator {
 		nodesCh:       make([]chan Message, nodeCount), // one channel per node
 		wg:            new(sync.WaitGroup),
 	}
-	fmt.Println("[DD] Peers", sim.peers)
-	fmt.Println("[DD] Links", sim.links)
 	sim.wg.Add(nodeCount)
 	for i := 0; i < nodeCount; i++ {
 		ch := sim.startNode(i)
@@ -50,7 +47,7 @@ func NewSimulator(data *graph.Data, N int, delay time.Duration) *Simulator {
 	return sim
 }
 
-func (s *Simulator) Run(startNodeIdx, ttl int) []*LogEntry {
+func (s *Simulator) SendMessage(startNodeIdx, ttl int) []*LogEntry {
 	message := Message{
 		Content: "dummy",
 		TTL:     ttl,
