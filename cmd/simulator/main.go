@@ -50,7 +50,10 @@ func main() {
 		}
 		gethlog.Root().SetHandler(gethlog.LvlFilterHandler(lvl, gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(true))))
 		sim = whisperv6.NewSimulator(data)
+	default:
+		log.Fatal("Unknown simulation type", *simType)
 	}
+	defer sim.Stop()
 	startNodeIdx, err := findNode(data.Nodes, *startNode)
 	if err != nil {
 		log.Fatalf("Can't find node '%s' in graph data. Check your -startNode option", *startNode)

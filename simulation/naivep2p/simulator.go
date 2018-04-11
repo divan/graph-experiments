@@ -48,6 +48,11 @@ func NewSimulator(data *graph.Data, N int, delay time.Duration) *Simulator {
 	return sim
 }
 
+// Stop stops simulator and frees all resources if any.
+func (s *Simulator) Stop() error {
+	return nil
+}
+
 func (s *Simulator) SendMessage(startNodeIdx, ttl int) *simulation.Log {
 	message := Message{
 		Content: "dummy",

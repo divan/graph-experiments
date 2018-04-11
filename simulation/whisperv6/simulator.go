@@ -28,10 +28,11 @@ func NewSimulator(data *graph.Data) *Simulator {
 		MaxMessageSize:     whisper.DefaultMaxMessageSize,
 		MinimumAcceptedPOW: 0.001,
 	}
-	whisperService := whisper.New(cfg)
 	services := map[string]adapters.ServiceFunc{
 		"shh": func(ctx *adapters.ServiceContext) (node.Service, error) {
-			return whisperService, nil
+			// it's important to init whisper service here, as it
+			// be initialized for each peer
+			return whisper.New(cfg), nil
 		},
 	}
 	adapters.RegisterServices(services)
@@ -58,11 +59,8 @@ func NewSimulator(data *graph.Data) *Simulator {
 	}
 
 	log.Println("Starting nodes...")
-	for i := 0; i < nodeCount; i++ {
-		err := network.Start(sim.nodes[i].ID())
-		if err != nil {
-			panic(err)
-		}
+	if err := network.StartAll(); err != nil {
+		panic(err)
 	}
 
 	log.Println("Connecting nodes...")
@@ -92,7 +90,8 @@ func NewSimulator(data *graph.Data) *Simulator {
 // Stop stops simulator and frees all resources if any.
 func (s *Simulator) Stop() error {
 	log.Println("Shutting down simulation nodes...")
-	return s.network.StopAll()
+	s.network.Shutdown()
+	return nil
 }
 
 // SendMessage sends single message and tracks propagation. Implements simulator.Interface.
