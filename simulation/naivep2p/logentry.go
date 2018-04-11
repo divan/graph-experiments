@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/divan/graph-experiments/simulation"
 )
 
 // LogEntry defines the reporting log entry for one
@@ -31,7 +33,7 @@ func NewLogEntry(start time.Time, from, to int) LogEntry {
 // LogEntries2PropagationLog converts raw slice of LogEntries to PropagationLog,
 // aggregating by timestamps and converting nodes indices to link indices.
 // We expect that timestamps already bucketed into Nms groups.
-func (s *Simulator) LogEntries2PropagationLog(entries []*LogEntry) *PropagationLog {
+func (s *Simulator) LogEntries2PropagationLog(entries []*LogEntry) *simulation.Log {
 	findLink := func(from, to int) int {
 		for i := range s.links {
 			if s.links[i].From == from && s.links[i].To == to ||
@@ -69,7 +71,7 @@ func (s *Simulator) LogEntries2PropagationLog(entries []*LogEntry) *PropagationL
 		tsnodes[entry.Ts] = nnodes
 	}
 
-	var ret = &PropagationLog{
+	var ret = &simulation.Log{
 		Timestamps: make([]int, 0, len(tss)),
 		Indices:    make([][]int, 0, len(tss)),
 		Nodes:      make([][]int, 0, len(tss)),

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/divan/graph-experiments/graph"
+	"github.com/divan/graph-experiments/simulation"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/node"
 	"github.com/ethereum/go-ethereum/p2p/discover"
@@ -26,7 +27,7 @@ func NewSimulator(data *graph.Data) *Simulator {
 }
 
 // SendMessage sends single message and tracks propagation. Implements simulator.Interface.
-func (s *Simulator) SendMessage(startNodeIdx, ttl int) []*LogEntry {
+func (s *Simulator) SendMessage(startNodeIdx, ttl int) *simulation.Log {
 	services := map[string]adapters.ServiceFunc{
 		"ping-pong": func(ctx *adapters.ServiceContext) (node.Service, error) {
 			return newPingPongService(ctx.Config.ID), nil
@@ -67,6 +68,8 @@ func (s *Simulator) SendMessage(startNodeIdx, ttl int) []*LogEntry {
 
 	log.Println("Sleeping 10 secs...")
 	time.Sleep(10 * time.Second)
+
+	return &simulation.Log{}
 }
 
 // nodeConfig generates config for simulated node with random key.

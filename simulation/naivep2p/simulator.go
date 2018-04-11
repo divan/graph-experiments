@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/divan/graph-experiments/graph"
+	"github.com/divan/graph-experiments/simulation"
 )
 
 // Simulator is responsible for running propagation simulation.
@@ -47,7 +48,7 @@ func NewSimulator(data *graph.Data, N int, delay time.Duration) *Simulator {
 	return sim
 }
 
-func (s *Simulator) SendMessage(startNodeIdx, ttl int) []*LogEntry {
+func (s *Simulator) SendMessage(startNodeIdx, ttl int) *simulation.Log {
 	message := Message{
 		Content: "dummy",
 		TTL:     ttl,
@@ -67,7 +68,7 @@ func (s *Simulator) SendMessage(startNodeIdx, ttl int) []*LogEntry {
 		case val := <-s.reportCh:
 			ret = append(ret, &val)
 		case <-done:
-			return ret
+			return s.LogEntries2PropagationLog(ret)
 		}
 	}
 }
