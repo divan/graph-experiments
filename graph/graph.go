@@ -5,66 +5,60 @@ import (
 	"os"
 )
 
-// Data represents graph data - nodes and links.
-type Data struct {
-	Nodes []*Node `json:"nodes"`
-	Links []*Link `json:"links"`
+// Graph represents graph data - nodes and links.
+type Graph struct {
+	nodes []Node
+	links []*Link
 
-	nodeLinks map[string]int
+	nodeIndexes map[string]int
+	nodeLinks   map[int]int
 }
 
-// Node represents single node of the graph.
-type Node struct {
-	ID     string `json:"id"`
-	Group  int    `json:"group,omitempty"`
-	Weight int32  `json:"weight,omitempty"`
+// NewGraph creates empty graph data.
+func NewGraph() *Graph {
+	return &Graph{}
 }
 
-// Link represents single link between two nodes.
-type Link struct {
-	Source  string `json:"source"`
-	Target  string `json:"target"`
-	FromIdx int    `json:"-"`
-	ToIdx   int    `json:"-"`
-}
-
-// NewData creates empty graph data.
-func NewData() *Data {
-	return &Data{}
-}
-
-// NewDataFromJSON creates a graph from the given JSON file.
-func NewDataFromJSON(file string) (*Data, error) {
+// NewGraphFromJSON creates a graph from the given JSON file.
+// TODO: add support for relfection and custom node types unmarshalling.
+func NewGraphFromJSON(file string) (*Graph, error) {
 	fd, err := os.Open(file)
 	if err != nil {
 		return nil, err
 	}
-	defer fd.Close()
+	defer fd.Close() //nolint: errcheck
 
-	var d *Data
-	err = json.NewDecoder(fd).Decode(&d)
+	// decode into temporary struct to process
+	var res struct {
+		Nodes []*BasicNode `json:"nodes"`
+		Links []*struct {
+			Source string `json:"source"`
+			Target string `json:"target"`
+		}
+	}
+	err = json.NewDecoder(fd).Decode(&res)
 	if err != nil {
 		return nil, err
 	}
 
-	d.prepare()
-
-	return d, err
-}
-
-// prepare runs various optimization-related
-// calculateions, caching etc.
-func (d *Data) prepare() {
-	// add node indexes to links
-	nodeIndexes := make(map[string]int)
-	for i, _ := range d.Nodes {
-		nodeIndexes[d.Nodes[i].ID] = i
+	// convert links IDs into indices
+	g := &Graph{
+		nodes: make([]Node, len(res.Nodes)),
+		links: make([]*Link, 0, len(res.Links)),
 	}
 
-	d.nodeLinks = make(map[string]int)
-	for i, link := range d.Links {
-		d.nodeLinks[link.Source]++
-		d.Links[i].FromIdx = nodeIndexes[link.Source]
-		d.Links[i].ToIdx = nodeIndexes[link.Target]
+	for i, node := range res.Nodes {
+		g.nodes[i] = node
 	}
+
+	for _, link := range res.Links {
+		err := g.AddLinkByIDs(link.Source, link.Target)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	g.prepare()
+
+	return g, err
 }
