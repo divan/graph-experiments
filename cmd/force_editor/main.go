@@ -11,16 +11,16 @@ import (
 func main() {
 	flag.Parse()
 
-	data, err := graph.NewDataFromJSON("data.json")
+	data, err := graph.NewDataFromJSON("network.json")
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes), len(data.Links))
 
 	log.Printf("Initializing layout...")
-	repelling := layout.NewGravityForce(-80.0, layout.BarneHutMethod)
-	springs := layout.NewSpringForce(0.02, 5.0, layout.ForEachLink)
-	drag := layout.NewDragForce(0.7, layout.ForEachNode)
+	repelling := layout.NewGravityForce(-200.0, layout.BarneHutMethod)
+	springs := layout.NewSpringForce(0.01, 5.0, layout.ForEachLink)
+	drag := layout.NewDragForce(0.4, layout.ForEachNode)
 	layout3D := layout.New(data, repelling, springs, drag)
 
 	ws := NewWSServer(layout3D)

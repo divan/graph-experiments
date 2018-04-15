@@ -3,9 +3,12 @@ package whisperv6
 import (
 	"fmt"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/divan/graph-experiments/graph"
 	"github.com/divan/graph-experiments/simulation"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/node"
 	"github.com/ethereum/go-ethereum/p2p/discover"
@@ -18,27 +21,24 @@ import (
 // given p2p network.
 type Simulator struct {
 	data     *graph.Data
+	links    []LinkIndex
 	network  *simulations.Network
-	nodes    []*simulations.Node
 	whispers map[discover.NodeID]*whisper.Whisper
 }
 
 // NewSimulator intializes simulator for the given graph data.
 func NewSimulator(data *graph.Data) *Simulator {
-	whispers := make(map[discover.NodeID]*whisper.Whisper)
+	rand.Seed(time.Now().UnixNano())
 
 	cfg := &whisper.Config{
 		MaxMessageSize:     whisper.DefaultMaxMessageSize,
 		MinimumAcceptedPOW: 0.001,
 	}
+
+	whispers := make(map[discover.NodeID]*whisper.Whisper, len(data.Nodes))
 	services := map[string]adapters.ServiceFunc{
 		"shh": func(ctx *adapters.ServiceContext) (node.Service, error) {
-			// it's important to init whisper service here, as it
-			// be initialized for each peer
-			id := ctx.Config.ID
-			service := whisper.New(cfg)
-			whispers[id] = service
-			return service, nil
+			return whispers[ctx.Config.ID], nil
 		},
 	}
 	adapters.RegisterServices(services)
@@ -50,10 +50,9 @@ func NewSimulator(data *graph.Data) *Simulator {
 
 	nodeCount := len(data.Nodes)
 	sim := &Simulator{
-		data:     data,
-		network:  network,
-		nodes:    make([]*simulations.Node, nodeCount),
-		whispers: whispers,
+		data:    data,
+		links:   PrecalculateLinkIndexes(data),
+		network: network,
 	}
 
 	log.Println("Creating nodes...")
@@ -62,7 +61,11 @@ func NewSimulator(data *graph.Data) *Simulator {
 		if err != nil {
 			panic(err)
 		}
-		sim.nodes[i] = node
+		// it's important to init whisper service here, as it
+		// be initialized for each peer
+		log.Println("Generating new whisper: ", node.ID())
+		service := whisper.New(cfg)
+		whispers[node.ID()] = service
 	}
 
 	log.Println("Starting nodes...")
@@ -80,8 +83,8 @@ func NewSimulator(data *graph.Data) *Simulator {
 		if err != nil {
 			panic(err)
 		}
-		node1 := sim.nodes[fromIdx]
-		node2 := sim.nodes[toIdx]
+		node1 := sim.network.Nodes[fromIdx]
+		node2 := sim.network.Nodes[toIdx]
 		// if connection already exists, skip it, as network.Connect will fail
 		if network.GetConn(node1.ID(), node2.ID()) != nil {
 			continue
@@ -103,18 +106,88 @@ func (s *Simulator) Stop() error {
 
 // SendMessage sends single message and tracks propagation. Implements simulator.Interface.
 func (s *Simulator) SendMessage(startNodeIdx, ttl int) *simulation.Log {
-	node := s.nodes[startNodeIdx]
-	service, ok := s.whispers[node.ID()]
-	if !ok {
-		log.Fatalf("Whisper service for node %d not found", startNodeIdx)
+	node := s.network.Nodes[startNodeIdx]
+
+	client, err := node.Client()
+	if err != nil {
+		log.Fatal("Failed getting client", err)
 	}
 
-	log.Println(" Sending Whisper message...")
-	msg := generateMessage(ttl)
-	err := service.Send(msg)
-	log.Println(" Error:", err)
+	log.Printf(" Sending Whisper message from %s...\n", node.ID().String())
 
-	return &simulation.Log{}
+	var symkeyID string
+	symKey := make([]byte, aesKeyLength)
+	rand.Read(symKey)
+
+	err = client.Call(&symkeyID, "shh_addSymKey", hexutil.Bytes(symKey))
+	msg := generateMessage(ttl, symkeyID)
+
+	s.network.Recorder.Reset()
+
+	var ignored bool
+	err = client.Call(&ignored, "shh_post", msg)
+	time.Sleep(3 * time.Second)
+
+	plog := s.network.Recorder.Log
+	log.Println("Resulting log", plog)
+	return s.LogEntries2PropagationLog(plog)
+}
+
+// LogEntries2PropagationLog converts raw slice of LogEntries to PropagationLog,
+// aggregating by timestamps and converting nodes indices to link indices.
+// We expect that timestamps already bucketed into Nms groups.
+func (s *Simulator) LogEntries2PropagationLog(entries []*simulations.LogEntry) *simulation.Log {
+	findLink := func(from, to int) int {
+		for i := range s.links {
+			if s.links[i].From == from && s.links[i].To == to ||
+				s.links[i].To == from && s.links[i].From == to {
+				return i
+			}
+		}
+		return -1
+	}
+
+	tss := make(map[time.Duration][]int)
+	tsnodes := make(map[time.Duration][]int)
+	for _, entry := range entries {
+		idx := findLink(entry.From, entry.To)
+		if idx == -1 {
+			log.Println("[EE] Wrong link", entry)
+			continue
+		}
+
+		// fill links map
+		if _, ok := tss[entry.Ts]; !ok {
+			tss[entry.Ts] = make([]int, 0)
+		}
+
+		values := tss[entry.Ts]
+		values = append(values, idx)
+		tss[entry.Ts] = values
+
+		// fill tsnodes map
+		if _, ok := tsnodes[entry.Ts]; !ok {
+			tsnodes[entry.Ts] = make([]int, 0)
+		}
+		nnodes := tsnodes[entry.Ts]
+		nnodes = append(nnodes, entry.From, entry.To)
+		tsnodes[entry.Ts] = nnodes
+	}
+
+	var ret = &simulation.Log{
+		Timestamps: make([]int, 0, len(tss)),
+		Indices:    make([][]int, 0, len(tss)),
+		Nodes:      make([][]int, 0, len(tss)),
+	}
+
+	for ts, links := range tss {
+		ret.Timestamps = append(ret.Timestamps, int(ts))
+		ret.Indices = append(ret.Indices, links)
+		ret.Nodes = append(ret.Nodes, tsnodes[ts])
+		fmt.Println("Adding", ts*time.Millisecond, int(ts), links, tsnodes[ts])
+	}
+
+	return ret
 }
 
 // nodeConfig generates config for simulated node with random key.
@@ -146,4 +219,28 @@ func findNode(nodes []*graph.Node, ID string) (int, error) {
 		}
 	}
 	return -1, fmt.Errorf("Node with ID '%s' not found", ID)
+}
+
+// LinkIndex stores link information in form of indexes, rather than nodes IP.
+type LinkIndex struct {
+	From int
+	To   int
+}
+
+// PrecalculateLinkIndexes prepares slice of LinkIndex for faster lookup.
+// TODO: move this indexes stuff into graph.Data structure itself, so this can be removed.
+func PrecalculateLinkIndexes(data *graph.Data) []LinkIndex {
+	m := make(map[string]int)
+	for idx := range data.Nodes {
+		m[data.Nodes[idx].ID] = idx
+	}
+
+	ret := make([]LinkIndex, len(data.Links))
+	for i, link := range data.Links {
+		ret[i] = LinkIndex{
+			From: m[link.Source],
+			To:   m[link.Target],
+		}
+	}
+	return ret
 }

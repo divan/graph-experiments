@@ -61,14 +61,13 @@ func main() {
 
 	// Start simulation by sending single message
 	log.Printf("Starting message sending %s simulation for graph with %d nodes...", *simType, len(data.Nodes))
-	time.Sleep(5 * time.Second)
 	sendData := sim.SendMessage(startNodeIdx, *ttl)
 	err = json.NewEncoder(fd).Encode(sendData)
 	if err != nil {
 		log.Fatal(err)
 	}
+	//sim.SendMessage(startNodeIdx, *ttl)
 	log.Printf("Written %s propagation data into %s", *simType, *output)
-	time.Sleep(5 * time.Second)
 }
 
 // findNode is a helper for finding node index by it's ID.

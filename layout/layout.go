@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/divan/graph-experiments/graph"
+	"gopkg.in/cheggaaa/pb.v1"
 )
 
 // stableThreshold determines the movement diff needed to
 // call the system stable
-const stableThreshold = 1.001
+const stableThreshold = 2.001
 
 // Layout represents physical layout used to process graph.
 type Layout interface {
@@ -111,20 +112,13 @@ func (l *Layout3D) Calculate() {
 // CalculateN run positions' recalculations exactly N times.
 func (l *Layout3D) CalculateN(n int) {
 	fmt.Println("Simulation started...")
-	var (
-		now    = time.Now()
-		count  int
-		prevTx float64
-		tx     = math.MaxFloat64
-	)
+	bar := pb.StartNew(n)
 	for i := 0; i < n; i++ {
-		prevTx = tx
-		tx = l.UpdatePositions()
-		count++
-		log.Println("PrevTx, tx:", tx, ", diff:", math.Abs(tx-prevTx))
-		since := time.Since(now)
-		fmt.Printf("Iterations: %d, tx: %f, time: %v\n", count, tx, since)
+		l.UpdatePositions()
+		bar.Increment()
 	}
+	bar.FinishPrint("Simulation finished")
+
 }
 
 // UpdatePositions recalculates nodes' positions, applying all the forces.

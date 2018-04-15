@@ -9,9 +9,10 @@ import (
 )
 
 func main() {
+	iterations := flag.Int("i", 600, "Graph layout iterations to run (0 = auto, buggy)")
 	flag.Parse()
 
-	data, err := graph.NewDataFromJSON("data.json")
+	data, err := graph.NewDataFromJSON("network.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,13 +25,17 @@ func main() {
 	log.Printf("Loaded propagation data: %d timestamps\n", len(plog.Timestamps))
 
 	log.Printf("Initializing layout...")
-	repelling := layout.NewGravityForce(-80.0, layout.BarneHutMethod)
-	springs := layout.NewSpringForce(0.02, 5.0, layout.ForEachLink)
-	drag := layout.NewDragForce(0.7, layout.ForEachNode)
+	repelling := layout.NewGravityForce(-100.0, layout.BarneHutMethod)
+	springs := layout.NewSpringForce(0.01, 5.0, layout.ForEachLink)
+	drag := layout.NewDragForce(0.4, layout.ForEachNode)
 	layout3D := layout.New(data, repelling, springs, drag)
 
 	ws := NewWSServer(layout3D)
-	ws.layout.CalculateN(600)
+	if *iterations == 0 {
+		ws.layout.Calculate()
+	} else {
+		ws.layout.CalculateN(*iterations)
+	}
 	ws.updateGraph(data)
 	ws.updatePropagationData(plog)
 

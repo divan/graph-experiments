@@ -13,10 +13,10 @@ import (
 
 func main() {
 	var (
-		genType  = flag.String("type", "net", "Generator type (net, line, circle, grid, grid3d)")
-		nodes    = flag.Int("n", 20, "Number of nodes")
-		netConns = flag.Int("conns", 4, "Number of connections between hosts for net generator")
-		output   = flag.String("o", "network.json", "Output filename for network data")
+		genType = flag.String("type", "net", "Generator type (net, line, circle, grid, grid3d, small-world)")
+		nodes   = flag.Int("n", 20, "Number of nodes")
+		conns   = flag.Int("conns", 4, "Number of connections between hosts for net generator")
+		output  = flag.String("o", "network.json", "Output filename for network data")
 	)
 	flag.Parse()
 
@@ -34,7 +34,7 @@ func main() {
 	var gen generation.GraphGenerator
 	switch *genType {
 	case "net":
-		gen = net.NewDummyGenerator(*nodes, *netConns, "192.168.1.1", net.Exact)
+		gen = net.NewDummyGenerator(*nodes, *conns, "192.168.1.1", net.Exact)
 	case "line":
 		gen = basic.NewLineGenerator(*nodes)
 	case "circle":
@@ -43,6 +43,8 @@ func main() {
 		gen = basic.NewGrid2DGeneratorN(*nodes)
 	case "grid3d":
 		gen = basic.NewGrid3DGeneratorN(*nodes)
+	case "small-world":
+		gen = basic.NewWattsStrogatzGenerator(*nodes, *conns)
 	}
 
 	log.Printf("Generating %s graph with %d nodes...\n", *genType, *nodes)
@@ -52,5 +54,4 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("Written graph into", *output)
-
 }

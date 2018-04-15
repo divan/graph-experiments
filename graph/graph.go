@@ -10,7 +10,7 @@ type Data struct {
 	Nodes []*Node `json:"nodes"`
 	Links []*Link `json:"links"`
 
-	nodeHasLinks map[string]bool
+	nodeLinks map[string]int
 }
 
 // Node represents single node of the graph.
@@ -61,9 +61,9 @@ func (d *Data) prepare() {
 		nodeIndexes[d.Nodes[i].ID] = i
 	}
 
-	d.nodeHasLinks = make(map[string]bool)
+	d.nodeLinks = make(map[string]int)
 	for i, link := range d.Links {
-		d.nodeHasLinks[link.Source] = true
+		d.nodeLinks[link.Source]++
 		d.Links[i].FromIdx = nodeIndexes[link.Source]
 		d.Links[i].ToIdx = nodeIndexes[link.Target]
 	}
