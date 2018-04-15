@@ -2,6 +2,7 @@ package graph
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 )
 
@@ -28,27 +29,32 @@ func NewGraphFromJSON(file string) (*Graph, error) {
 	}
 	defer fd.Close() //nolint: errcheck
 
+	return NewGraphFromJSONReader(fd)
+}
+
+// NewGraphFromJSONReader creates a graph from the given JSON file.
+func NewGraphFromJSONReader(r io.Reader) (*Graph, error) {
 	// decode into temporary struct to process
 	var res struct {
 		Nodes []*BasicNode `json:"nodes"`
 		Links []*struct {
 			Source string `json:"source"`
 			Target string `json:"target"`
-		}
+		} `json:"links"`
 	}
-	err = json.NewDecoder(fd).Decode(&res)
+	err := json.NewDecoder(r).Decode(&res)
 	if err != nil {
 		return nil, err
 	}
 
 	// convert links IDs into indices
 	g := &Graph{
-		nodes: make([]Node, len(res.Nodes)),
+		nodes: make([]Node, 0, len(res.Nodes)),
 		links: make([]*Link, 0, len(res.Links)),
 	}
 
-	for i, node := range res.Nodes {
-		g.nodes[i] = node
+	for _, node := range res.Nodes {
+		g.AddNode(node)
 	}
 
 	for _, link := range res.Links {
@@ -61,4 +67,14 @@ func NewGraphFromJSON(file string) (*Graph, error) {
 	g.prepare()
 
 	return g, err
+}
+
+// Nodes returns graph nodes
+func (g *Graph) Nodes() []Node {
+	return g.nodes
+}
+
+// Links returns graph links.
+func (g *Graph) Links() []*Link {
+	return g.links
 }

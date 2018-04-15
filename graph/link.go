@@ -37,11 +37,11 @@ func (g *Graph) AddLink(from, to int) error {
 // AddLinkByIDs adds new link to the graph by node IDs and
 // valides the input.
 func (g *Graph) AddLinkByIDs(fromID, toID string) error {
-	from, err := g.findNodeByID(fromID)
+	from, err := g.NodeByID(fromID)
 	if err != nil {
 		return err
 	}
-	to, err := g.findNodeByID(toID)
+	to, err := g.NodeByID(toID)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,8 @@ func (g *Graph) AddLinkByIDs(fromID, toID string) error {
 	return nil
 }
 
-func (g *Graph) findNodeByID(id string) (int, error) {
+// NodeByID returns node index by its ID.
+func (g *Graph) NodeByID(id string) (int, error) {
 	for i, node := range g.nodes {
 		if node.ID() == id {
 			return i, nil

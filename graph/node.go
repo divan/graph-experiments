@@ -16,18 +16,28 @@ type WeightedNode interface {
 	Weight() int
 }
 
+// AddNode adds new node to graph.
+func (g *Graph) AddNode(node Node) {
+	g.nodes = append(g.nodes, node)
+}
+
+// AddNodes adds new nodes to graph.
+func (g *Graph) AddNodes(nodes ...Node) {
+	g.nodes = append(g.nodes, nodes...)
+}
+
 // BasicNode represents basic built-in node type for simple cases.
 type BasicNode struct {
-	id     string
-	group  int
-	weight int
+	ID_     string `json:"id"`
+	Group_  int    `json:"group"`
+	Weight_ int    `json:"weight"`
 }
 
 // ID implements Node for BasicNode.
-func (b *BasicNode) ID() string { return b.id }
+func (b *BasicNode) ID() string { return b.ID_ }
 
 // Group implements GroupNode for BasicNode.
-func (b *BasicNode) Group() int { return b.group }
+func (b *BasicNode) Group() int { return b.Group_ }
 
 // Weight implements WeightedNode for BasicNode.
-func (b *BasicNode) Weight() int { return b.weight }
+func (b *BasicNode) Weight() int { return b.Weight_ }

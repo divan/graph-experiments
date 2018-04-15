@@ -1,6 +1,6 @@
 package graph
 
-// NodeHasLinks implements fast check if given node has any links/
+// NodeHasLinks implements fast check if given node has any links.
 func (g *Graph) NodeHasLinks(idx int) bool {
 	if g.nodeLinks == nil {
 		g.prepare()
@@ -13,6 +13,34 @@ func (g *Graph) NodeHasLinks(idx int) bool {
 func (g *Graph) NodeLinks(idx int) int {
 	if g.nodeLinks == nil {
 		g.prepare()
+	}
+
+	return g.nodeLinks[idx]
+}
+
+// NodeIDHasLinks implements fast check if given node by ID has any links.
+func (g *Graph) NodeIDHasLinks(id string) bool {
+	if g.nodeLinks == nil {
+		g.prepare()
+	}
+
+	idx, err := g.NodeByID(id)
+	if err != nil {
+		return false
+	}
+
+	return g.nodeLinks[idx] > 0
+}
+
+// NodeIDLinks returns number of links for node ID.
+func (g *Graph) NodeIDLinks(id string) int {
+	if g.nodeLinks == nil {
+		g.prepare()
+	}
+
+	idx, err := g.NodeByID(id)
+	if err != nil {
+		return 0
 	}
 
 	return g.nodeLinks[idx]
@@ -60,5 +88,6 @@ func (g *Graph) prepare() {
 	g.nodeLinks = make(map[int]int)
 	for _, link := range g.links {
 		g.nodeLinks[link.From]++
+		g.nodeLinks[link.To]++
 	}
 }
