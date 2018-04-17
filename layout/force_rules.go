@@ -19,25 +19,25 @@ type ForceRule func(
 // ForEachLink applies force to both ends of each link in the graph, with positive and negative signs respectively.
 var ForEachLink = func(
 	force Force,
-	nodes []*Node,
+	nodes []Node,
 	links []*graph.Link,
 	vectors map[int]*ForceVector,
 	debugInfo ForcesDebugData) {
 	for _, link := range links {
-		from := nodes[link.FromIdx]
-		to := nodes[link.ToIdx]
+		from := nodes[link.From]
+		to := nodes[link.To]
 		f := force.Apply(from.Point, to.Point)
 
 		// Update force vectors
-		ff := vectors[link.FromIdx]
-		vectors[link.FromIdx] = ff.Add(f)
-		ft := vectors[link.ToIdx]
-		vectors[link.ToIdx] = ft.Sub(f)
+		ff := vectors[link.From]
+		vectors[link.From] = ff.Add(f)
+		ft := vectors[link.To]
+		vectors[link.To] = ft.Sub(f)
 
 		// Update debug information
 		name := force.Name()
-		debugInfo.Append(link.FromIdx, name, *f)
-		debugInfo.Append(link.ToIdx, name, f.Negative())
+		debugInfo.Append(link.From, name, *f)
+		debugInfo.Append(link.To, name, f.Negative())
 	}
 }
 

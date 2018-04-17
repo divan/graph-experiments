@@ -19,8 +19,8 @@ type Octree struct {
 // to calculate center of the mass of octants.
 type Point struct {
 	Idx      int
-	X, Y, Z  int32
-	Mass     int32
+	X, Y, Z  int
+	Mass     int
 	Velocity Velocity
 }
 
@@ -147,25 +147,25 @@ func (n *node) updateMassCenter() {
 
 func massCenter(points []*Point) *Point {
 	var (
-		xm, ym, zm int64
-		totalMass  int64
+		xm, ym, zm int
+		totalMass  int
 	)
 
 	for _, p := range points {
 		if p == nil {
 			continue
 		}
-		totalMass += int64(p.Mass)
-		xm += int64(p.X) * int64(p.Mass)
-		ym += int64(p.Y) * int64(p.Mass)
-		zm += int64(p.Z) * int64(p.Mass)
+		totalMass += p.Mass
+		xm += p.X * p.Mass
+		ym += p.Y * p.Mass
+		zm += p.Z * p.Mass
 	}
 
 	return &Point{
-		X:    int32(xm / totalMass),
-		Y:    int32(ym / totalMass),
-		Z:    int32(zm / totalMass),
-		Mass: int32(totalMass),
+		X:    int(xm / totalMass),
+		Y:    int(ym / totalMass),
+		Z:    int(zm / totalMass),
+		Mass: int(totalMass),
 	}
 }
 

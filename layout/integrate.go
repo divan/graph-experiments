@@ -44,9 +44,9 @@ func (l *Layout3D) integrate() float64 {
 		dy := dt * body.Velocity.Y
 		dz := dt * body.Velocity.Z
 
-		body.X += int32(dx)
-		body.Y += int32(dy)
-		body.Z += int32(dz)
+		body.X += int(dx)
+		body.Y += int(dy)
+		body.Z += int(dz)
 
 		tx += math.Abs(dx)
 		ty += math.Abs(dy)

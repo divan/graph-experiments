@@ -45,10 +45,10 @@ type Layout3D struct {
 }
 
 // New initializes layout with nodes data.
-func New(data *graph.Data, forces ...Force) LayoutWithDebug {
+func New(data *graph.Graph, forces ...Force) LayoutWithDebug {
 	l := &Layout3D{
 		data:            data,
-		links:           data.Links,
+		links:           data.Links(),
 		forces:          forces,
 		forceVectors:    make(map[int]*ForceVector),
 		forcesDebugData: make(ForcesDebugData),
@@ -62,24 +62,30 @@ func New(data *graph.Data, forces ...Force) LayoutWithDebug {
 // Reset resets positions to the (semi)pseudorandom positions and cancels all
 // forces and velocities.
 func (l *Layout3D) Reset() {
-	l.nodes = make([]*Node, 0, len(l.data.Nodes))
+	l.nodes = make([]*Node, 0, len(l.data.Nodes()))
 
-	for i := range l.data.Nodes {
+	for i := range l.data.Nodes() {
 		radius := 10 * math.Cbrt(float64(i))
 		rollAngle := float64(float64(i) * math.Pi * (3 - math.Sqrt(5))) // golden angle
 		yawAngle := float64(float64(i) * math.Pi / 24)                  // sequential (divan: wut?)
 
-		node := &Node{
+		var weight int = 1
+		node := l.data.Nodes()[i]
+		if wnode, ok := node.(graph.WeightedNode); ok {
+			weight = wnode.Weight()
+		}
+
+		newNode := &Node{
 			Point: &Point{
 				Idx:  i,
-				X:    int32(radius * math.Cos(rollAngle)),
-				Y:    int32(radius * math.Sin(rollAngle)),
-				Z:    int32(radius * math.Sin(yawAngle)),
-				Mass: l.data.Nodes[i].Weight + 2,
+				X:    int(radius * math.Cos(rollAngle)),
+				Y:    int(radius * math.Sin(rollAngle)),
+				Z:    int(radius * math.Sin(yawAngle)),
+				Mass: weight,
 			},
-			ID: l.data.Nodes[i].ID,
+			ID: node.ID(),
 		}
-		l.nodes = append(l.nodes, node)
+		l.nodes = append(l.nodes, newNode)
 	}
 
 	l.resetForces()
