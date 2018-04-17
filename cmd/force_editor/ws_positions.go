@@ -3,9 +3,9 @@ package main
 import "github.com/gorilla/websocket"
 
 type position struct {
-	X int32 `json:"x"`
-	Y int32 `json:"y"`
-	Z int32 `json:"z"`
+	X int `json:"x"`
+	Y int `json:"y"`
+	Z int `json:"z"`
 }
 
 func (ws *WSServer) sendPositions(c *websocket.Conn) {

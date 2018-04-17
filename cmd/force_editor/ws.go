@@ -15,7 +15,7 @@ type WSServer struct {
 	hub      []*websocket.Conn
 
 	layout layout.LayoutWithDebug
-	graph  *graph.Data
+	graph  *graph.Graph
 
 	history    []*ForceAndPosition
 	currentIdx int
@@ -39,7 +39,7 @@ type WSResponse struct {
 	Type      MsgType                `json:"type"`
 	Idx       int                    `json:"idx"`
 	Positions []*position            `json:"positions,omitempty"`
-	Graph     *graph.Data            `json:"graph,omitempty"`
+	Graph     *graph.Graph           `json:"graph,omitempty"`
 	Forces    layout.ForcesDebugData `json:"forces,omitempty"`
 }
 

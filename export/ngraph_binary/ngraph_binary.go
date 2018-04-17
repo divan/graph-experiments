@@ -31,7 +31,7 @@ func NewExporter(dir string) *NgraphBinaryOutput {
 	}
 }
 
-func (o *NgraphBinaryOutput) Save(l layout.Layout, data *graph.Data) error {
+func (o *NgraphBinaryOutput) Save(l layout.Layout, data *graph.Graph) error {
 	err := o.WritePositionsBin(l)
 	if err != nil {
 		return err
@@ -60,9 +60,9 @@ func (o *NgraphBinaryOutput) WritePositionsBin(l layout.Layout) error {
 
 	nodes := l.Nodes()
 	for i, _ := range nodes {
-		iw.Write(nodes[i].X)
-		iw.Write(nodes[i].Y)
-		iw.Write(nodes[i].Z)
+		iw.Write(int32(nodes[i].X))
+		iw.Write(int32(nodes[i].Y))
+		iw.Write(int32(nodes[i].Z))
 		if iw.err != nil {
 			return err
 		}
@@ -74,7 +74,7 @@ func (o *NgraphBinaryOutput) WritePositionsBin(l layout.Layout) error {
 // WriteLinksBin writes links information into `links.bin` file in the
 // following way: Sidx,L1idx,L2idx,S2idx,L1idx... where SNidx - is the
 // start node index, and LNidx - is the other link end node index.
-func (o *NgraphBinaryOutput) WriteLinksBin(data *graph.Data) error {
+func (o *NgraphBinaryOutput) WriteLinksBin(data *graph.Graph) error {
 	file := filepath.Join(o.dir, "links.bin")
 	fd, err := os.Create(file)
 	if err != nil {
@@ -83,15 +83,15 @@ func (o *NgraphBinaryOutput) WriteLinksBin(data *graph.Data) error {
 	defer fd.Close()
 
 	iw := NewInt32LEWriter(fd)
-	for i, node := range data.Nodes {
-		if !data.NodeHasLinks(node.ID) {
+	for i := range data.Nodes() {
+		if !data.NodeHasLinks(i) {
 			continue
 		}
 
 		iw.Write(int32(-(i + 1)))
-		for _, link := range data.Links {
-			if link.Source == node.ID {
-				iw.Write(int32(link.ToIdx + 1))
+		for _, link := range data.Links() {
+			if link.From == i {
+				iw.Write(int32(link.To + 1))
 			}
 		}
 		if iw.err != nil {
@@ -103,7 +103,7 @@ func (o *NgraphBinaryOutput) WriteLinksBin(data *graph.Data) error {
 
 // WriteLabels writes node ids (labels) information into `labels.json` file
 // as an array of strings.
-func (o *NgraphBinaryOutput) WriteLabels(data *graph.Data) error {
+func (o *NgraphBinaryOutput) WriteLabels(data *graph.Graph) error {
 	file := filepath.Join(o.dir, "labels.json")
 	fd, err := os.Create(file)
 	if err != nil {
@@ -112,8 +112,8 @@ func (o *NgraphBinaryOutput) WriteLabels(data *graph.Data) error {
 	defer fd.Close()
 
 	var labels []string
-	for i, _ := range data.Nodes {
-		labels = append(labels, data.Nodes[i].ID)
+	for i := range data.Nodes() {
+		labels = append(labels, data.Nodes()[i].ID())
 	}
 	return json.NewEncoder(fd).Encode(labels)
 }

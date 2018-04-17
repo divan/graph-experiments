@@ -12,11 +12,11 @@ func main() {
 	iterations := flag.Int("i", 600, "Graph layout iterations to run (0 = auto, buggy)")
 	flag.Parse()
 
-	data, err := graph.NewDataFromJSON("network.json")
+	data, err := graph.NewGraphFromJSON("network.json")
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes), len(data.Links))
+	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes()), len(data.Links()))
 
 	plog, err := LoadPropagationData("propagation.json")
 	if err != nil {

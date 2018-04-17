@@ -19,7 +19,7 @@ type ForceRule func(
 // ForEachLink applies force to both ends of each link in the graph, with positive and negative signs respectively.
 var ForEachLink = func(
 	force Force,
-	nodes []Node,
+	nodes []*Node,
 	links []*graph.Link,
 	vectors map[int]*ForceVector,
 	debugInfo ForcesDebugData) {

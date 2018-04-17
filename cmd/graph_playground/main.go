@@ -12,11 +12,11 @@ func main() {
 	iterations := flag.Int("steps", 100, "Number of iterations for force-directed layout simulation")
 	flag.Parse()
 
-	data, err := graph.NewDataFromJSON("static/data.json")
+	data, err := graph.NewGraphFromJSON("static/data.json")
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes), len(data.Links))
+	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes()), len(data.Links()))
 
 	log.Printf("Initializing layout...")
 	layout := layout.New(data)

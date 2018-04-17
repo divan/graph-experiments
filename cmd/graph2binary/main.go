@@ -19,11 +19,11 @@ func main() {
 	if len(os.Args) > 1 {
 		file = os.Args[1]
 	}
-	data, err := graph.NewDataFromJSON(file)
+	data, err := graph.NewGraphFromJSON(file)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes), len(data.Links))
+	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes()), len(data.Links()))
 	ngraph := ngraph_binary.NewExporter(*dir)
 
 	log.Printf("Initializing layout...")

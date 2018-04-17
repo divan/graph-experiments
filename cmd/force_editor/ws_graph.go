@@ -15,7 +15,7 @@ func (ws *WSServer) sendGraphData(c *websocket.Conn) {
 	ws.sendMsg(c, msg)
 }
 
-func (ws *WSServer) updateGraph(data *graph.Data) {
+func (ws *WSServer) updateGraph(data *graph.Graph) {
 	ws.graph = data
 
 	ws.broadcastGraphData()

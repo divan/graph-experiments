@@ -16,7 +16,7 @@ type WSServer struct {
 
 	Positions   []*position
 	layout      layout.LayoutWithDebug
-	graph       *graph.Data
+	graph       *graph.Graph
 	propagation *PropagationLog
 }
 
@@ -32,7 +32,7 @@ func NewWSServer(layout layout.LayoutWithDebug) *WSServer {
 type WSResponse struct {
 	Type        MsgType         `json:"type"`
 	Positions   []*position     `json:"positions,omitempty"`
-	Graph       *graph.Data     `json:"graph,omitempty"`
+	Graph       *graph.Graph    `json:"graph,omitempty"`
 	Propagation *PropagationLog `json:"propagation,omitempty"`
 }
 
