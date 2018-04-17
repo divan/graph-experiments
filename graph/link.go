@@ -50,13 +50,3 @@ func (g *Graph) AddLinkByIDs(fromID, toID string) error {
 	g.links = append(g.links, link)
 	return nil
 }
-
-// NodeByID returns node index by its ID.
-func (g *Graph) NodeByID(id string) (int, error) {
-	for i, node := range g.nodes {
-		if node.ID() == id {
-			return i, nil
-		}
-	}
-	return 0, fmt.Errorf("Node %s not found", id)
-}

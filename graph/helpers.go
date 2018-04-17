@@ -1,5 +1,7 @@
 package graph
 
+import "fmt"
+
 // NodeHasLinks implements fast check if given node has any links.
 func (g *Graph) NodeHasLinks(idx int) bool {
 	if g.nodeLinks == nil {
@@ -74,6 +76,25 @@ func (g *Graph) LinkExistsByID(source, target string) bool {
 		}
 	}
 	return false
+}
+
+// NodeByID returns node index by its ID.
+func (g *Graph) NodeByID(id string) (int, error) {
+	for i, node := range g.nodes {
+		if node.ID() == id {
+			return i, nil
+		}
+	}
+	return 0, fmt.Errorf("node %s not found", id)
+}
+
+// NodeIDByIdx returns node ID by its index.
+func (g *Graph) NodeIDByIdx(idx int) (string, error) {
+	if idx < 0 || idx > len(g.nodes)-1 {
+		return "", fmt.Errorf("node for index %d not found", idx)
+	}
+
+	return g.nodes[idx].ID(), nil
 }
 
 // prepare runs various optimization-related
