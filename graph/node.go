@@ -29,8 +29,8 @@ func (g *Graph) AddNodes(nodes ...Node) {
 // BasicNode represents basic built-in node type for simple cases.
 type BasicNode struct {
 	ID_     string `json:"id"`
-	Group_  int    `json:"group"`
-	Weight_ int    `json:"weight"`
+	Group_  int    `json:"group,omitempty"`
+	Weight_ int    `json:"weight,omitempty"`
 }
 
 // ID implements Node for BasicNode.

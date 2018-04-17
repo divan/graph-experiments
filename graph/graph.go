@@ -2,6 +2,7 @@ package graph
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
 )
@@ -65,6 +66,10 @@ func NewGraphFromJSONReader(r io.Reader) (*Graph, error) {
 	}
 
 	g.prepare()
+
+	if len(g.nodes) == 0 {
+		return nil, errors.New("empty graph")
+	}
 
 	return g, err
 }

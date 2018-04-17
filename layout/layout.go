@@ -34,7 +34,7 @@ type LayoutWithDebug interface {
 
 // Layout3D implements Layout interface for force-directed 3D graph.
 type Layout3D struct {
-	data *graph.Data
+	data *graph.Graph
 
 	nodes  []*Node
 	links  []*graph.Link

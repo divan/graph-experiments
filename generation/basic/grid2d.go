@@ -47,21 +47,21 @@ func estimateRowsCols(n int) (int, int) {
 
 // Generate generates the data for graph. Implements Generator interface.
 func (l *Grid2DGenerator) Generate() *graph.Graph {
-	data := graph.NewGraph()
+	g := graph.NewGraph()
 
 	for i := 0; i < l.rows; i++ {
 		for j := 0; j < l.cols; j++ {
 			idx := i + j*l.rows
-			addNode(data, idx)
+			addNode(g, idx)
 
 			if i > 0 {
-				data.AddLink(idx, i-1+j*l.rows)
+				g.AddLink(idx, i-1+j*l.rows)
 			}
 			if j > 0 {
-				data.AddLink(idx, i+(j-1)*l.rows)
+				g.AddLink(idx, i+(j-1)*l.rows)
 			}
 		}
 	}
 
-	return data
+	return g
 }

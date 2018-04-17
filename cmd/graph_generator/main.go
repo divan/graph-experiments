@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"log"
 	"os"
 
+	"github.com/divan/graph-experiments/export"
 	"github.com/divan/graph-experiments/generation"
 	"github.com/divan/graph-experiments/generation/basic"
 	"github.com/divan/graph-experiments/generation/net"
@@ -49,7 +49,7 @@ func main() {
 
 	log.Printf("Generating %s graph with %d nodes...\n", *genType, *nodes)
 	data := gen.Generate()
-	err = json.NewEncoder(fd).Encode(data)
+	err = export.NewJSON(fd, true).ExportGraph(data)
 	if err != nil {
 		log.Fatal(err)
 	}
