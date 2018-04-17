@@ -39,7 +39,7 @@ type WSResponse struct {
 	Type      MsgType                `json:"type"`
 	Idx       int                    `json:"idx"`
 	Positions []*position            `json:"positions,omitempty"`
-	Graph     *graph.Graph           `json:"graph,omitempty"`
+	Graph     json.RawMessage        `json:"graph,omitempty"`
 	Forces    layout.ForcesDebugData `json:"forces,omitempty"`
 }
 

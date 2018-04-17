@@ -32,7 +32,7 @@ func NewWSServer(layout layout.LayoutWithDebug) *WSServer {
 type WSResponse struct {
 	Type        MsgType         `json:"type"`
 	Positions   []*position     `json:"positions,omitempty"`
-	Graph       *graph.Graph    `json:"graph,omitempty"`
+	Graph       json.RawMessage `json:"graph,omitempty"`
 	Propagation *PropagationLog `json:"propagation,omitempty"`
 }
 
