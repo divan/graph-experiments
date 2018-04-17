@@ -51,17 +51,17 @@ func (l *Grid3DGenerator) Generate() *graph.Graph {
 		for i := 0; i < l.rows; i++ {
 			for j := 0; j < l.cols; j++ {
 				level := k * l.rows * l.cols
-				idx := i + j*l.rows + level
+				idx := j + i*l.rows + level
 				addNode(data, idx)
 
-				if i > 0 {
-					data.AddLink(idx, i-1+j*l.rows+level)
-				}
 				if j > 0 {
-					data.AddLink(idx, i+(j-1)*l.rows+level)
+					data.AddLink(idx, j-1+i*l.rows+level)
+				}
+				if i > 0 {
+					data.AddLink(idx, j+(i-1)*l.rows+level)
 				}
 				if k > 0 {
-					data.AddLink(idx, i+j*l.rows+(k-1)*l.rows*l.cols)
+					data.AddLink(idx, j+i*l.rows+(k-1)*l.rows*l.cols)
 				}
 			}
 		}
