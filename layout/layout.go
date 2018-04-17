@@ -74,6 +74,9 @@ func (l *Layout3D) Reset() {
 		if wnode, ok := node.(graph.WeightedNode); ok {
 			weight = wnode.Weight()
 		}
+		if weight == 0 {
+			weight = 1
+		}
 
 		newNode := &Node{
 			Point: &Point{
