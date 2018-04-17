@@ -51,14 +51,14 @@ func (l *Grid2DGenerator) Generate() *graph.Graph {
 
 	for i := 0; i < l.rows; i++ {
 		for j := 0; j < l.cols; j++ {
-			idx := i + j*l.rows
+			idx := j + i*l.rows
 			addNode(g, idx)
 
 			if i > 0 {
-				g.AddLink(idx, i-1+j*l.rows)
+				g.AddLink(idx, j-1+i*l.rows)
 			}
 			if j > 0 {
-				g.AddLink(idx, i+(j-1)*l.rows)
+				g.AddLink(idx, j+(i-1)*l.rows)
 			}
 		}
 	}
