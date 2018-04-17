@@ -44,8 +44,8 @@ func estimateRowsColsLevels(n int) (int, int, int) {
 }
 
 // Generate generates the data for graph. Implements Generator interface.
-func (l *Grid3DGenerator) Generate() *graph.Data {
-	data := graph.NewData()
+func (l *Grid3DGenerator) Generate() *graph.Graph {
+	data := graph.NewGraph()
 
 	for k := 0; k < l.levels; k++ {
 		for i := 0; i < l.rows; i++ {
@@ -55,13 +55,13 @@ func (l *Grid3DGenerator) Generate() *graph.Data {
 				addNode(data, idx)
 
 				if i > 0 {
-					addLink(data, idx, i-1+j*l.rows+level)
+					data.AddLink(idx, i-1+j*l.rows+level)
 				}
 				if j > 0 {
-					addLink(data, idx, i+(j-1)*l.rows+level)
+					data.AddLink(idx, i+(j-1)*l.rows+level)
 				}
 				if k > 0 {
-					addLink(data, idx, i+j*l.rows+(k-1)*l.rows*l.cols)
+					data.AddLink(idx, i+j*l.rows+(k-1)*l.rows*l.cols)
 				}
 			}
 		}

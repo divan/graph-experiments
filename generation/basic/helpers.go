@@ -6,19 +6,12 @@ import (
 	"github.com/divan/graph-experiments/graph"
 )
 
-func addNode(data *graph.Data, i int) {
-	node := &graph.Node{
-		ID: idxToID(i),
+func addNode(g *graph.Graph, i int) {
+	node := &graph.BasicNode{
+		ID_: idxToID(i),
 	}
-	data.Nodes = append(data.Nodes, node)
-}
 
-func addLink(data *graph.Data, i, j int) {
-	link := &graph.Link{
-		Source: idxToID(i),
-		Target: idxToID(j),
-	}
-	data.Links = append(data.Links, link)
+	g.AddNode(node)
 }
 
 // idxToID creates ID to be used with Node struct from index.

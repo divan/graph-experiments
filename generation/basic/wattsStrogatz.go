@@ -27,8 +27,8 @@ func NewWattsStrogatzGenerator(n, conns int) *WattsStrogatzGenerator {
 }
 
 // Generate generates the data for graph. Implements Generator interface.
-func (l *WattsStrogatzGenerator) Generate() *graph.Data {
-	data := graph.NewData()
+func (l *WattsStrogatzGenerator) Generate() *graph.Graph {
+	data := graph.NewGraph()
 
 	for i := 0; i < l.nodes; i++ {
 		addNode(data, i)
@@ -40,7 +40,7 @@ func (l *WattsStrogatzGenerator) Generate() *graph.Data {
 	for i := 1; i < neigbors; i++ {
 		for j := 0; j < l.nodes; j++ {
 			to := int(math.Mod(float64(i+j), float64(l.nodes)))
-			addLink(data, j, to)
+			data.AddLink(j, to)
 		}
 	}
 
@@ -57,14 +57,14 @@ func (l *WattsStrogatzGenerator) Generate() *graph.Data {
 			newTo := rand.Intn(l.nodes)
 
 			// TODO: switch to link indexes
-			needsRewire := (newTo == i) || data.LinkExists(data.Nodes[from].ID, data.Nodes[newTo].ID)
-			if needsRewire && (data.NodeLinks(data.Nodes[from].ID) == l.nodes-1) {
+			needsRewire := (newTo == i) || data.LinkExists(from, newTo)
+			if needsRewire && (data.NodeLinks(from) == l.nodes-1) {
 				continue
 			}
 
 			for needsRewire {
 				newTo = rand.Intn(l.nodes)
-				needsRewire = (newTo == i) || data.LinkExists(data.Nodes[from].ID, data.Nodes[newTo].ID)
+				needsRewire = (newTo == i) || data.LinkExists(from, newTo)
 			}
 
 			rewireLink(data, from, to, newTo)
@@ -75,15 +75,13 @@ func (l *WattsStrogatzGenerator) Generate() *graph.Data {
 }
 
 // TODO: move it into graph package
-func rewireLink(d *graph.Data, from, to, newTo int) {
-	source := d.Nodes[from].ID
-	target := d.Nodes[to].ID
-	newTarget := d.Nodes[newTo].ID
-	for i := range d.Links {
-		if d.Links[i].Source == source && d.Links[i].Target == target {
-			d.Links[i].Target = newTarget
-		} else if d.Links[i].Target == source && d.Links[i].Source == target {
-			d.Links[i].Source = newTarget
+func rewireLink(g *graph.Graph, from, to, newTo int) {
+	links := g.Links()
+	for i := range links {
+		if links[i].From == from && links[i].To == to {
+			links[i].To = newTo
+		} else if links[i].To == from && links[i].From == to {
+			links[i].From = newTo
 		}
 	}
 }

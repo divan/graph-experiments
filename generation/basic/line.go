@@ -17,14 +17,14 @@ func NewLineGenerator(n int) *LineGenerator {
 }
 
 // Generate generates the data for graph. Implements Generator interface.
-func (l *LineGenerator) Generate() *graph.Data {
-	data := graph.NewData()
+func (l *LineGenerator) Generate() *graph.Graph {
+	data := graph.NewGraph()
 
 	for i := 0; i < l.nodes; i++ {
 		addNode(data, i)
 
 		if i != l.nodes-1 {
-			addLink(data, i, i+1)
+			data.AddLink(i, i+1)
 		}
 	}
 

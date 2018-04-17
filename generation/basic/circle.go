@@ -17,8 +17,8 @@ func NewCircleGenerator(n int) *CircleGenerator {
 }
 
 // Generate generates the data for graph. Implements Generator interface.
-func (l *CircleGenerator) Generate() *graph.Data {
-	data := graph.NewData()
+func (l *CircleGenerator) Generate() *graph.Graph {
+	data := graph.NewGraph()
 
 	for i := 0; i < l.nodes; i++ {
 		addNode(data, i)
@@ -27,7 +27,7 @@ func (l *CircleGenerator) Generate() *graph.Data {
 		if i == l.nodes-1 {
 			j = 0
 		}
-		addLink(data, i, j)
+		data.AddLink(i, j)
 	}
 
 	return data

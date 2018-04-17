@@ -40,41 +40,40 @@ type Node struct {
 }
 
 // NewNode generates new Node with givan IP address.
-func NewNode(ip string) *graph.Node {
-	return &graph.Node{
-		ID: ip,
+func NewNode(ip string) *Node {
+	return &Node{
+		IP: ip,
 	}
+}
+
+// ID implements graph.Node interface and returns node ID.
+func (n *Node) ID() string {
+	return n.IP
 }
 
 // Generate generates dummy network with known number of
 // hosts with known number of connections each. Implements Generator
 // interface.
-func (d *DummyGenerator) Generate() *graph.Data {
-	data := graph.NewData()
+func (d *DummyGenerator) Generate() *graph.Graph {
+	g := graph.NewGraph()
 
 	// generate hosts
 	gen := NewIPGenerator(d.startIP)
 	for i := 0; i < d.hosts; i++ {
 		ip := gen.NextAddress()
 		node := NewNode(ip)
-		data.Nodes = append(data.Nodes, node)
+		g.AddNode(node)
 	}
 
 	// generate links
 	for i := 0; i < d.hosts; i++ {
 		for j := 0; j < d.conns(); j++ {
-			link := &graph.Link{
-				Source: data.Nodes[i].ID,
-			}
-
-			idx := d.nextIdx(data, i)
-
-			link.Target = data.Nodes[idx].ID
-			data.Links = append(data.Links, link)
+			idx := d.nextIdx(g, i)
+			g.AddLink(i, idx)
 		}
 	}
 
-	return data
+	return g
 }
 
 // conns return the number of connections based on the
@@ -99,12 +98,12 @@ func (d *DummyGenerator) conns() int {
 // to minimize the probability of choosing the existing link
 // (it doesn't guarantee, but it's cheap).
 // TODO: make it more efficient and faster
-func (d *DummyGenerator) nextIdx(data *graph.Data, i int) int {
+func (d *DummyGenerator) nextIdx(g *graph.Graph, i int) int {
 	// use uniform distribution for now
 	idx := rand.Intn(d.hosts - 1)
-	if idx == i || data.LinkExists(data.Nodes[idx].ID, data.Nodes[i].ID) {
+	if idx == i || g.LinkExists(idx, i) {
 		idx = rand.Intn(d.hosts - 1)
-		if idx == i || data.LinkExists(data.Nodes[idx].ID, data.Nodes[i].ID) {
+		if idx == i || g.LinkExists(idx, i) {
 			idx = rand.Intn(d.hosts - 1)
 		}
 	}
