@@ -116,9 +116,9 @@ var initGraph = function () {
 
 	autoColorNodes(graphData.nodes);
 	graphData.nodes.forEach((node, idx) => {
-		const val = valAccessor(node) || 1;
+		let val = valAccessor(node) || 1;
 		if (!sphereGeometries.hasOwnProperty(val)) {
-			sphereGeometries[val] = NewEthereumGeometry();
+			sphereGeometries[val] = NewEthereumGeometry(val);
 		}
 
 		const color = colorAccessor(node);
@@ -150,7 +150,7 @@ var initGraph = function () {
 			lineMaterials[color] = new THREE.LineBasicMaterial({
 				color: /*colorStr2Hex(color || '#f0f0f0')*/ '#f0f0f0',
 				transparent: true,
-				opacity: 0.2,
+				opacity: 0.4,
 			});
 		}
 
@@ -253,12 +253,12 @@ let mat = new THREE.LineBasicMaterial({
 });
 
 // Params
-var restoreTimeout = 20; // ms
+var restoreTimeout = 250; // ms
 function updateRestoreTimeout(value) {
 	console.log("Updating restore timeout to ", value);
 	restoreTimeout = value;
 }
-var delayFactor = 2;     // multiplication factor for blink timeout
+var delayFactor = 3;     // multiplication factor for blink timeout
 function updateDelayFactor(value) {
 	delayFactor = value;
 }
@@ -343,15 +343,15 @@ function autoColorNodes(nodes) {
 module.exports = { colorStr2Hex, autoColorNodes };
 
 },{"d3-scale-chromatic":10,"tinycolor2":13}],4:[function(require,module,exports){
-function NewEthereumGeometry() {
+function NewEthereumGeometry(scale) {
 	let geom = new THREE.Geometry();
 	geom.vertices.push(
-		new THREE.Vector3(  1,  0,  0 ),
-		new THREE.Vector3( -1,  0,  0 ),
-		new THREE.Vector3(  0,  1.5,  0 ),
-		new THREE.Vector3(  0, -1.5,  0 ),
-		new THREE.Vector3(  0,  0,  1 ),
-		new THREE.Vector3(  0,  0, -1 )
+		new THREE.Vector3(  scale*1,  0,  0 ),
+		new THREE.Vector3( -scale*1,  0,  0 ),
+		new THREE.Vector3(  0,  scale*1.5,  0 ),
+		new THREE.Vector3(  0, scale*-1.5,  0 ),
+		new THREE.Vector3(  0,  0,  scale*1 ),
+		new THREE.Vector3(  0,  0, -scale*1 )
 	);
 	geom.faces.push(
 		new THREE.Face3( 0, 2, 4 ),
