@@ -1,0 +1,5 @@
+status-cluster
+node_modules/
+data.json
+network.json
+propagation.json
