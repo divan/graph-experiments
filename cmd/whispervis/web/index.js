@@ -115,9 +115,9 @@ var initGraph = function () {
 
 	autoColorNodes(graphData.nodes);
 	graphData.nodes.forEach((node, idx) => {
-		const val = valAccessor(node) || 1;
+		let val = valAccessor(node) || 1;
 		if (!sphereGeometries.hasOwnProperty(val)) {
-			sphereGeometries[val] = NewEthereumGeometry();
+			sphereGeometries[val] = NewEthereumGeometry(val);
 		}
 
 		const color = colorAccessor(node);
@@ -149,7 +149,7 @@ var initGraph = function () {
 			lineMaterials[color] = new THREE.LineBasicMaterial({
 				color: /*colorStr2Hex(color || '#f0f0f0')*/ '#f0f0f0',
 				transparent: true,
-				opacity: 0.2,
+				opacity: 0.4,
 			});
 		}
 
