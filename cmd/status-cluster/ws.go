@@ -14,10 +14,9 @@ type WSServer struct {
 	upgrader websocket.Upgrader
 	hub      []*websocket.Conn
 
-	Positions   []*position
-	layout      layout.Layout
-	graph       *graph.Graph
-	propagation *PropagationLog
+	Positions []*position
+	layout    layout.Layout
+	graph     *graph.Graph
 }
 
 func NewWSServer(layout layout.Layout) *WSServer {
@@ -30,10 +29,9 @@ func NewWSServer(layout layout.Layout) *WSServer {
 }
 
 type WSResponse struct {
-	Type        MsgType         `json:"type"`
-	Positions   []*position     `json:"positions,omitempty"`
-	Graph       json.RawMessage `json:"graph,omitempty"`
-	Propagation *PropagationLog `json:"propagation,omitempty"`
+	Type      MsgType         `json:"type"`
+	Positions []*position     `json:"positions,omitempty"`
+	Graph     json.RawMessage `json:"graph,omitempty"`
 }
 
 type WSRequest struct {
@@ -45,14 +43,14 @@ type WSCommand string
 
 // WebSocket response types
 const (
-	RespPositions   MsgType = "positions"
-	RespGraph       MsgType = "graph"
-	RespPropagation MsgType = "propagation"
+	RespPositions MsgType = "positions"
+	RespGraph     MsgType = "graph"
 )
 
 // WebSocket commands
 const (
-	CmdInit WSCommand = "init"
+	CmdInit    WSCommand = "init"
+	CmdRefresh WSCommand = "refresh"
 )
 
 func (ws *WSServer) Handle(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +86,10 @@ func (ws *WSServer) processRequest(c *websocket.Conn, mtype int, data []byte) {
 		ws.sendGraphData(c)
 		ws.updatePositions()
 		ws.sendPositions(c)
-		ws.sendPropagationData(c)
+	case CmdRefresh:
+		ws.sendGraphData(c)
+		ws.updatePositions()
+		ws.sendPositions(c)
 	}
 }
 

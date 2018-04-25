@@ -2,7 +2,6 @@
 var { colorStr2Hex, autoColorNodes } = require('./js/colors.js');
 require('./js/keys.js');
 var accessorFn = require('./js/shitty_hacks.js');
-var { animatePropagation, restoreTimeout, updateRestoreTimeout, delayFactor, updateDelayFactor } = require('./js/animation.js');
 var { NewEthereumGeometry } = require('./js/ethereum.js');
 
 var Stats = require('stats-js');
@@ -22,18 +21,13 @@ function setGraphData(data) {
 	initGraph();
 }
 
-function setPropagation(plogData) {
-	plog = plogData;
-	animatePropagation(nodesGroup, linksGroup, plogData);
-}
-
 function updatePositions(data) {
 	positions = data;
 
 	redrawGraph();
 }
 
-module.exports = { updatePositions, setGraphData, setPropagation };
+module.exports = { updatePositions, setGraphData };
 
 // Setup scene
 const scene = new THREE.Scene();
@@ -79,15 +73,6 @@ stats.domElement.style.bottom = '20px';
 
 // Dat GUI
 const gui = new dat.GUI();
-var f1 = gui.addFolder('Animation');
-var restoreCtl = f1.add({ restoreTimeout: restoreTimeout }, 'restoreTimeout').name('Restore timeout');
-restoreCtl.onFinishChange(function(value) {
-	updateRestoreTimeout(value);
-});
-var factorCtl = f1.add({ delayFactor: delayFactor }, 'delayFactor').name('Delay factor');
-factorCtl.onFinishChange(function(value) {
-	updateDelayFactor(value);
-});
 
 var initGraph = function () {
 	resizeCanvas();
@@ -224,103 +209,10 @@ var redrawGraph = function () {
 	});
 };
 
-// replay restarts propagation animation.
-function replay() {
-	console.log(linksGroup, plog);
-	animatePropagation(nodesGroup, linksGroup, plog);
-}
-// js functions after browserify cannot be accessed from html,
-// so instead of using onclick="replay()" we need to attach listener
-// here.
-// Did I already say that whole frontend ecosystem is a one giant
-// museum of hacks for hacks on top of hacks?
-var replayButton = document.getElementById('replayButton');
-replayButton.addEventListener('click', replay);
-
 animate();
 
-},{"./js/animation.js":2,"./js/colors.js":3,"./js/ethereum.js":4,"./js/keys.js":5,"./js/shitty_hacks.js":6,"dat.gui":11,"stats-js":12}],2:[function(require,module,exports){
-var gradient = require('d3-scale-chromatic').interpolateCool;
 
-function sleep(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-let mat = new THREE.LineBasicMaterial({
-	color: '#cc0000',
-	transparent: true,
-	opacity: 0.7
-});
-
-// Params
-var restoreTimeout = 250; // ms
-function updateRestoreTimeout(value) {
-	console.log("Updating restore timeout to ", value);
-	restoreTimeout = value;
-}
-var delayFactor = 3;     // multiplication factor for blink timeout
-function updateDelayFactor(value) {
-	delayFactor = value;
-}
-
-function blinkLink(links, indices) {
-	indices.forEach(idx => {
-		if (links.children[idx].material === mat) {
-			return
-		}
-		let oldMat = links.children[idx].material;
-		links.children[idx].material = mat;
-
-		console.log("Blinking with restore timeout", restoreTimeout);
-		setTimeout(function() {
-			links.children[idx].material = oldMat;
-		}, restoreTimeout);
-	});
-}
-
-var nodeCounters = {};
-var maxCounter = 0;
-var nodeMaterials = {};
-
-// blinkNodes updates nodes color increasing its temperature
-// in a heatmap style
-function blinkNodes(nodes, indices) {
-	indices.forEach(idx => {
-		nodeCounters[idx] = nodeCounters[idx] ? nodeCounters[idx]+1 : 1;
-		if (nodeCounters[idx] > maxCounter) {
-			maxCounter = nodeCounters[idx];
-		}
-	});
-	// TODO: FIXME: how to make simple map counter without this fucking bullshit?
-	Object.keys(nodeCounters).forEach(idx => {
-		let c = nodeCounters[idx];
-		let scale = c / maxCounter;
-		let color = gradient(scale);
-		if (nodeMaterials[color] === undefined) {
-			nodeMaterials[color] = new THREE.MeshStandardMaterial({color: new THREE.Color(color)});
-		}
-		nodes.children[idx].material = nodeMaterials[color];
-	});
-}
-
-function animatePropagation(nodes, links, plog) {
-	maxCounter = 0;
-	nodeCounters = {};
-	plog.Timestamps.forEach((ts, idx) => {
-		setTimeout(function() {
-			blinkLink(links, plog.Indices[idx]);
-		}, ts*delayFactor);
-		setTimeout(function() {
-			blinkNodes(nodes, plog.Nodes[idx]);
-		}, ts*delayFactor);
-	});
-}
-
-module.exports = { animatePropagation,
-	restoreTimeout, updateRestoreTimeout,
-	delayFactor, updateDelayFactor }
-
-},{"d3-scale-chromatic":10}],3:[function(require,module,exports){
+},{"./js/colors.js":2,"./js/ethereum.js":3,"./js/keys.js":4,"./js/shitty_hacks.js":5,"dat.gui":10,"stats-js":11}],2:[function(require,module,exports){
 var schemePaired = require('d3-scale-chromatic').schemePaired;
 var tinyColor = require('tinycolor2');
 
@@ -342,7 +234,7 @@ function autoColorNodes(nodes) {
 
 module.exports = { colorStr2Hex, autoColorNodes };
 
-},{"d3-scale-chromatic":10,"tinycolor2":13}],4:[function(require,module,exports){
+},{"d3-scale-chromatic":9,"tinycolor2":12}],3:[function(require,module,exports){
 function NewEthereumGeometry(scale) {
 	let geom = new THREE.Geometry();
 	geom.vertices.push(
@@ -370,11 +262,11 @@ function NewEthereumGeometry(scale) {
 
 module.exports = { NewEthereumGeometry };
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 document.addEventListener("keydown", function(event) {
 });
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 // accessorFn
 function accessorFn(p) {
 	if (p instanceof Function) {
@@ -394,7 +286,7 @@ function accessorFn(p) {
 
 module.exports = accessorFn;
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var graph = require('../index.js');
 
 var ws = new WebSocket('ws://' + window.location.host + '/ws');
@@ -410,9 +302,6 @@ ws.onmessage = function (event) {
 		case "graph":
 			graph.setGraphData(msg.graph);
 			break;
-		case "propagation":
-			graph.setPropagation(msg.propagation);
-			break;
 		case "positions":
 			console.log("Updating positions...");
 			graph.updatePositions(msg.positions);
@@ -420,9 +309,21 @@ ws.onmessage = function (event) {
 	}
 }
 
+// refresh restarts propagation animation.
+function refresh() {
+    ws.send('{"cmd": "refresh"}');
+}
+// js functions after browserify cannot be accessed from html,
+// so instead of using onclick="refresh()" we need to attach listener
+// here.
+// Did I already say that whole frontend ecosystem is a one giant
+// museum of hacks for hacks on top of hacks?
+var refreshButton = document.getElementById('refreshButton');
+refreshButton.addEventListener('click', refresh);
+
 module.exports = { ws };
 
-},{"../index.js":1}],8:[function(require,module,exports){
+},{"../index.js":1}],7:[function(require,module,exports){
 // https://d3js.org/d3-color/ Version 1.0.3. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -947,7 +848,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // https://d3js.org/d3-interpolate/ Version 1.1.6. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-color')) :
@@ -1494,7 +1395,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":8}],10:[function(require,module,exports){
+},{"d3-color":7}],9:[function(require,module,exports){
 // https://d3js.org/d3-scale-chromatic/ Version 1.2.0. Copyright 2018 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-interpolate'), require('d3-color')) :
@@ -1980,7 +1881,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":8,"d3-interpolate":9}],11:[function(require,module,exports){
+},{"d3-color":7,"d3-interpolate":8}],10:[function(require,module,exports){
 /**
  * dat-gui JavaScript Controller Library
  * http://code.google.com/p/dat-gui
@@ -4504,7 +4405,7 @@ return index;
 })));
 
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 // stats.js - http://github.com/mrdoob/stats.js
 var Stats=function(){var l=Date.now(),m=l,g=0,n=Infinity,o=0,h=0,p=Infinity,q=0,r=0,s=0,f=document.createElement("div");f.id="stats";f.addEventListener("mousedown",function(b){b.preventDefault();t(++s%2)},!1);f.style.cssText="width:80px;opacity:0.9;cursor:pointer";var a=document.createElement("div");a.id="fps";a.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#002";f.appendChild(a);var i=document.createElement("div");i.id="fpsText";i.style.cssText="color:#0ff;font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px";
 i.innerHTML="FPS";a.appendChild(i);var c=document.createElement("div");c.id="fpsGraph";c.style.cssText="position:relative;width:74px;height:30px;background-color:#0ff";for(a.appendChild(c);74>c.children.length;){var j=document.createElement("span");j.style.cssText="width:1px;height:30px;float:left;background-color:#113";c.appendChild(j)}var d=document.createElement("div");d.id="ms";d.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#020;display:none";f.appendChild(d);var k=document.createElement("div");
@@ -4512,7 +4413,7 @@ k.id="msText";k.style.cssText="color:#0f0;font-family:Helvetica,Arial,sans-serif
 "block";d.style.display="none";break;case 1:a.style.display="none",d.style.display="block"}};return{REVISION:12,domElement:f,setMode:t,begin:function(){l=Date.now()},end:function(){var b=Date.now();g=b-l;n=Math.min(n,g);o=Math.max(o,g);k.textContent=g+" MS ("+n+"-"+o+")";var a=Math.min(30,30-30*(g/200));e.appendChild(e.firstChild).style.height=a+"px";r++;b>m+1E3&&(h=Math.round(1E3*r/(b-m)),p=Math.min(p,h),q=Math.max(q,h),i.textContent=h+" FPS ("+p+"-"+q+")",a=Math.min(30,30-30*(h/100)),c.appendChild(c.firstChild).style.height=
 a+"px",m=b,r=0);return b},update:function(){l=this.end()}}};"object"===typeof module&&(module.exports=Stats);
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 // TinyColor v1.4.1
 // https://github.com/bgrins/TinyColor
 // Brian Grinstead, MIT License
@@ -5709,4 +5610,4 @@ else {
 
 })(Math);
 
-},{}]},{},[1,7]);
+},{}]},{},[1,6]);

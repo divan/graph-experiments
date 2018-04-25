@@ -1,7 +1,6 @@
 var { colorStr2Hex, autoColorNodes } = require('./js/colors.js');
 require('./js/keys.js');
 var accessorFn = require('./js/shitty_hacks.js');
-var { animatePropagation, restoreTimeout, updateRestoreTimeout, delayFactor, updateDelayFactor } = require('./js/animation.js');
 var { NewEthereumGeometry } = require('./js/ethereum.js');
 
 var Stats = require('stats-js');
@@ -21,18 +20,13 @@ function setGraphData(data) {
 	initGraph();
 }
 
-function setPropagation(plogData) {
-	plog = plogData;
-	animatePropagation(nodesGroup, linksGroup, plogData);
-}
-
 function updatePositions(data) {
 	positions = data;
 
 	redrawGraph();
 }
 
-module.exports = { updatePositions, setGraphData, setPropagation };
+module.exports = { updatePositions, setGraphData };
 
 // Setup scene
 const scene = new THREE.Scene();
@@ -78,15 +72,6 @@ stats.domElement.style.bottom = '20px';
 
 // Dat GUI
 const gui = new dat.GUI();
-var f1 = gui.addFolder('Animation');
-var restoreCtl = f1.add({ restoreTimeout: restoreTimeout }, 'restoreTimeout').name('Restore timeout');
-restoreCtl.onFinishChange(function(value) {
-	updateRestoreTimeout(value);
-});
-var factorCtl = f1.add({ delayFactor: delayFactor }, 'delayFactor').name('Delay factor');
-factorCtl.onFinishChange(function(value) {
-	updateDelayFactor(value);
-});
 
 var initGraph = function () {
 	resizeCanvas();
@@ -223,17 +208,5 @@ var redrawGraph = function () {
 	});
 };
 
-// replay restarts propagation animation.
-function replay() {
-	console.log(linksGroup, plog);
-	animatePropagation(nodesGroup, linksGroup, plog);
-}
-// js functions after browserify cannot be accessed from html,
-// so instead of using onclick="replay()" we need to attach listener
-// here.
-// Did I already say that whole frontend ecosystem is a one giant
-// museum of hacks for hacks on top of hacks?
-var replayButton = document.getElementById('replayButton');
-replayButton.addEventListener('click', replay);
-
 animate();
+
