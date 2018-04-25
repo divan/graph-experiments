@@ -14,7 +14,7 @@ type WSServer struct {
 	upgrader websocket.Upgrader
 	hub      []*websocket.Conn
 
-	layout layout.LayoutWithDebug
+	layout *layout.Layout3DWithDebug
 	graph  *graph.Graph
 
 	history    []*ForceAndPosition
@@ -26,7 +26,7 @@ type ForceAndPosition struct {
 	Forces    layout.ForcesDebugData
 }
 
-func NewWSServer(layout layout.LayoutWithDebug) *WSServer {
+func NewWSServer(layout *layout.Layout3DWithDebug) *WSServer {
 	ws := &WSServer{
 		upgrader: websocket.Upgrader{},
 		layout:   layout,

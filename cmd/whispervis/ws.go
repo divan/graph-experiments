@@ -15,12 +15,12 @@ type WSServer struct {
 	hub      []*websocket.Conn
 
 	Positions   []*position
-	layout      layout.LayoutWithDebug
+	layout      layout.Layout
 	graph       *graph.Graph
 	propagation *PropagationLog
 }
 
-func NewWSServer(layout layout.LayoutWithDebug) *WSServer {
+func NewWSServer(layout layout.Layout) *WSServer {
 	ws := &WSServer{
 		upgrader: websocket.Upgrader{},
 		layout:   layout,
