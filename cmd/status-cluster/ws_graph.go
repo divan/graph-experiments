@@ -7,6 +7,7 @@ import (
 
 	"github.com/divan/graph-experiments/export"
 	"github.com/divan/graph-experiments/graph"
+	"github.com/divan/graph-experiments/layout"
 	"github.com/gorilla/websocket"
 )
 
@@ -24,8 +25,9 @@ func (ws *WSServer) sendGraphData(c *websocket.Conn) {
 	ws.sendMsg(c, msg)
 }
 
-func (ws *WSServer) updateGraph(g *graph.Graph) {
+func (ws *WSServer) updateGraph(g *graph.Graph, l layout.Layout) {
 	ws.graph = g
+	ws.layout = l
 
 	ws.broadcastGraphData()
 }

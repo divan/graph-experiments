@@ -17,14 +17,15 @@ type WSServer struct {
 	Positions []*position
 	layout    layout.Layout
 	graph     *graph.Graph
+
+	sshHosts []string
 }
 
-func NewWSServer(layout layout.Layout) *WSServer {
+func NewWSServer(sshHosts []string) *WSServer {
 	ws := &WSServer{
 		upgrader: websocket.Upgrader{},
-		layout:   layout,
+		sshHosts: sshHosts,
 	}
-	ws.updatePositions()
 	return ws
 }
 
@@ -87,9 +88,7 @@ func (ws *WSServer) processRequest(c *websocket.Conn, mtype int, data []byte) {
 		ws.updatePositions()
 		ws.sendPositions(c)
 	case CmdRefresh:
-		ws.sendGraphData(c)
-		ws.updatePositions()
-		ws.sendPositions(c)
+		ws.refresh()
 	}
 }
 
@@ -105,4 +104,23 @@ func (ws *WSServer) sendMsg(c *websocket.Conn, msg *WSResponse) {
 		log.Println("write:", err)
 		return
 	}
+}
+
+func (ws *WSServer) refresh() {
+	g := graph.NewGraph()
+	log.Println("Getting peers from Status-cluster via SSH")
+	processSSH(g, ws.sshHosts)
+	log.Printf("Loaded graph: %d nodes, %d links\n", len(g.Nodes()), len(g.Links()))
+	printStats(g)
+
+	log.Printf("Initializing layout...")
+	repelling := layout.NewGravityForce(-100.0, layout.BarneHutMethod)
+	springs := layout.NewSpringForce(0.01, 5.0, layout.ForEachLink)
+	drag := layout.NewDragForce(0.4, layout.ForEachNode)
+	l := layout.New(g, repelling, springs, drag)
+
+	l.CalculateN(20)
+
+	ws.updateGraph(g, l)
+	ws.updatePositions()
 }

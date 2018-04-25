@@ -5,34 +5,48 @@ import (
 	"log"
 
 	"github.com/divan/graph-experiments/graph"
-	"github.com/divan/graph-experiments/layout"
+	"github.com/ethereum/go-ethereum/p2p"
 )
 
 func main() {
-	iterations := flag.Int("i", 20, "Graph layout iterations to run (0 = auto, buggy)")
 	flag.Parse()
 
-	data, err := graph.NewGraphFromJSON("network.json")
-	if err != nil {
-		log.Fatal(err)
+	hosts := []string{
+		//"163.172.176.22:30503",
+		//"163.172.176.22:30403",
+		"51.15.85.243:30403",
+		"51.15.35.110:30303",
+		"51.15.85.243:30503",
 	}
-	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes()), len(data.Links()))
 
-	log.Printf("Initializing layout...")
-	repelling := layout.NewGravityForce(-100.0, layout.BarneHutMethod)
-	springs := layout.NewSpringForce(0.01, 5.0, layout.ForEachLink)
-	drag := layout.NewDragForce(0.4, layout.ForEachNode)
-	layout3D := layout.New(data, repelling, springs, drag)
-
-	ws := NewWSServer(layout3D)
-	if *iterations == 0 {
-		ws.layout.Calculate()
-	} else {
-		ws.layout.CalculateN(*iterations)
-	}
-	ws.updateGraph(data)
+	ws := NewWSServer(hosts)
+	ws.refresh()
 
 	log.Printf("Starting web server...")
 	startWeb(ws)
 	select {}
+}
+
+func AddPeer(g *graph.Graph, fromID string, to *p2p.PeerInfo) {
+	toID := to.ID
+	addNode(g, fromID, false)
+	addNode(g, toID, isClient(to.Name))
+
+	if g.LinkExistsByID(fromID, toID) {
+		return
+	}
+	if to.Network.Inbound == false {
+		g.AddLinkByIDs(fromID, toID)
+	} else {
+		g.AddLinkByIDs(toID, fromID)
+	}
+}
+
+func addNode(g *graph.Graph, id string, client bool) {
+	if _, err := g.NodeByID(id); err == nil {
+		// already exists
+		return
+	}
+	node := NewNode(id, client)
+	g.AddNode(node)
 }
