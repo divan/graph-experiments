@@ -51,7 +51,7 @@ func makeStats(g *graph.Graph) *Stats {
 		return ret
 	}
 
-	ns := make([]*NodeStats, len(g.Nodes()))
+	ns := make([]*NodeStats, 0, len(g.Nodes()))
 	for i, node := range g.Nodes() {
 		n := node.(*Node)
 

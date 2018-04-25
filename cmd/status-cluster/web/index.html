@@ -37,9 +37,44 @@
 				<p>This graph represents Status mainnet cluster and connected clients </p>
 				<div>
 					<button class="pure-button pure-button-primary" id="refreshButton">Refresh</button>
+					<br />
+					<div><i> Last updated:
+						<span id="lastUpdated"></span>
+						</i>
+					</div>
 				</div>
-				<div id="stats">
-				</div>
+				<hr />
+				<div><h3>Servers/clients: <span id="stats.servers"></span> / <span id="stats.clients"></span></h3></div>
+				<h3>Servers:</h3>
+				<table class="pure-table pure-table-horizontal" width="90%">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Peers</th>
+							<th>Clients</th>
+						</tr>
+					</thead>
+				
+					<tbody id="servers.table">
+						<tr>
+							<td>123456</td>
+							<td>4</td>
+							<td>2</td>
+						</tr>
+				
+						<tr>
+							<td>654321</td>
+							<td>3</td>
+							<td>4</td>
+						</tr>
+				
+						<tr>
+							<td>781839</td>
+							<td>4</td>
+							<td>6</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 			<div class="pure-u-4-5">
 				<canvas id="preview"></canvas>
