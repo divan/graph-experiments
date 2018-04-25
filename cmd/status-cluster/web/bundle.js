@@ -212,7 +212,7 @@ var redrawGraph = function () {
 animate();
 
 
-},{"./js/colors.js":2,"./js/ethereum.js":3,"./js/keys.js":4,"./js/shitty_hacks.js":5,"dat.gui":10,"stats-js":11}],2:[function(require,module,exports){
+},{"./js/colors.js":2,"./js/ethereum.js":3,"./js/keys.js":4,"./js/shitty_hacks.js":5,"dat.gui":11,"stats-js":12}],2:[function(require,module,exports){
 var schemePaired = require('d3-scale-chromatic').schemePaired;
 var tinyColor = require('tinycolor2');
 
@@ -234,7 +234,7 @@ function autoColorNodes(nodes) {
 
 module.exports = { colorStr2Hex, autoColorNodes };
 
-},{"d3-scale-chromatic":9,"tinycolor2":12}],3:[function(require,module,exports){
+},{"d3-scale-chromatic":10,"tinycolor2":13}],3:[function(require,module,exports){
 function NewEthereumGeometry(scale) {
 	let geom = new THREE.Geometry();
 	geom.vertices.push(
@@ -287,13 +287,26 @@ function accessorFn(p) {
 module.exports = accessorFn;
 
 },{}],6:[function(require,module,exports){
+var stats = {}
+
+function update(stats) {
+    stats= stats;
+    let statsDiv = document.getElementById('stats');
+    statsDiv.innerHTML = JSON.stringify(stats);
+}
+
+module.exports = { update };
+
+},{}],7:[function(require,module,exports){
 var graph = require('../index.js');
+var stats = require('./stats.js')
 
 var ws = new WebSocket('ws://' + window.location.host + '/ws');
 
 // request graphData and initial positions from websocket connection
 ws.onopen = function (event) {
 	ws.send('{"cmd": "init"}'); 
+	ws.send('{"cmd": "stats"}'); 
 };
 
 ws.onmessage = function (event) {
@@ -305,6 +318,10 @@ ws.onmessage = function (event) {
 		case "positions":
 			console.log("Updating positions...");
 			graph.updatePositions(msg.positions);
+			break;
+		case "stats":
+			console.log("Get stats...", msg);
+			stats.update(msg.stats);
 			break;
 	}
 }
@@ -323,7 +340,7 @@ refreshButton.addEventListener('click', refresh);
 
 module.exports = { ws };
 
-},{"../index.js":1}],7:[function(require,module,exports){
+},{"../index.js":1,"./stats.js":6}],8:[function(require,module,exports){
 // https://d3js.org/d3-color/ Version 1.0.3. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -848,7 +865,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 // https://d3js.org/d3-interpolate/ Version 1.1.6. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-color')) :
@@ -1395,7 +1412,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":7}],9:[function(require,module,exports){
+},{"d3-color":8}],10:[function(require,module,exports){
 // https://d3js.org/d3-scale-chromatic/ Version 1.2.0. Copyright 2018 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-interpolate'), require('d3-color')) :
@@ -1881,7 +1898,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":7,"d3-interpolate":8}],10:[function(require,module,exports){
+},{"d3-color":8,"d3-interpolate":9}],11:[function(require,module,exports){
 /**
  * dat-gui JavaScript Controller Library
  * http://code.google.com/p/dat-gui
@@ -4405,7 +4422,7 @@ return index;
 })));
 
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 // stats.js - http://github.com/mrdoob/stats.js
 var Stats=function(){var l=Date.now(),m=l,g=0,n=Infinity,o=0,h=0,p=Infinity,q=0,r=0,s=0,f=document.createElement("div");f.id="stats";f.addEventListener("mousedown",function(b){b.preventDefault();t(++s%2)},!1);f.style.cssText="width:80px;opacity:0.9;cursor:pointer";var a=document.createElement("div");a.id="fps";a.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#002";f.appendChild(a);var i=document.createElement("div");i.id="fpsText";i.style.cssText="color:#0ff;font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px";
 i.innerHTML="FPS";a.appendChild(i);var c=document.createElement("div");c.id="fpsGraph";c.style.cssText="position:relative;width:74px;height:30px;background-color:#0ff";for(a.appendChild(c);74>c.children.length;){var j=document.createElement("span");j.style.cssText="width:1px;height:30px;float:left;background-color:#113";c.appendChild(j)}var d=document.createElement("div");d.id="ms";d.style.cssText="padding:0 0 3px 3px;text-align:left;background-color:#020;display:none";f.appendChild(d);var k=document.createElement("div");
@@ -4413,7 +4430,7 @@ k.id="msText";k.style.cssText="color:#0f0;font-family:Helvetica,Arial,sans-serif
 "block";d.style.display="none";break;case 1:a.style.display="none",d.style.display="block"}};return{REVISION:12,domElement:f,setMode:t,begin:function(){l=Date.now()},end:function(){var b=Date.now();g=b-l;n=Math.min(n,g);o=Math.max(o,g);k.textContent=g+" MS ("+n+"-"+o+")";var a=Math.min(30,30-30*(g/200));e.appendChild(e.firstChild).style.height=a+"px";r++;b>m+1E3&&(h=Math.round(1E3*r/(b-m)),p=Math.min(p,h),q=Math.max(q,h),i.textContent=h+" FPS ("+p+"-"+q+")",a=Math.min(30,30-30*(h/100)),c.appendChild(c.firstChild).style.height=
 a+"px",m=b,r=0);return b},update:function(){l=this.end()}}};"object"===typeof module&&(module.exports=Stats);
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // TinyColor v1.4.1
 // https://github.com/bgrins/TinyColor
 // Brian Grinstead, MIT License
@@ -5610,4 +5627,4 @@ else {
 
 })(Math);
 
-},{}]},{},[1,6]);
+},{}]},{},[1,7]);

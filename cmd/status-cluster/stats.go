@@ -1,25 +1,45 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/divan/graph-experiments/graph"
 )
 
-func printStats(g *graph.Graph) {
-	peers, clients := make(map[string]int), make(map[string]int)
+type Stats struct {
+	Clients    []string
+	ClientsNum int
+	Servers    []string
+	ServersNum int
+	LinksNum   int
+	Nodes      []*NodeStats
+}
+
+type NodeStats struct {
+	ID         string
+	Peers      []string
+	Clients    []string
+	PeersNum   int
+	ClientsNum int
+	IsClient   bool
+}
+
+func makeStats(g *graph.Graph) *Stats {
+	s := &Stats{}
+
+	var servers, clients []string
 	for _, node := range g.Nodes() {
 		n := node.(*Node)
 		if n.IsClient() {
-			clients[n.ID()]++
+			clients = append(clients, n.ID())
 		} else {
-			peers[n.ID()]++
+			servers = append(servers, n.ID())
 		}
 	}
 
-	fmt.Println("Graph stats:")
-	fmt.Printf("Nodes - %d (%d clients, %d servers)\n", len(g.Nodes()), len(clients), len(peers))
-	fmt.Println("Links:", len(g.Links()))
+	s.Clients = clients
+	s.ClientsNum = len(clients)
+	s.Servers = servers
+	s.ServersNum = len(servers)
+	s.LinksNum = len(g.Links())
 
 	findLinks := func(idx int) []*graph.Link {
 		var ret []*graph.Link
@@ -30,10 +50,13 @@ func printStats(g *graph.Graph) {
 		}
 		return ret
 	}
+
+	ns := make([]*NodeStats, len(g.Nodes()))
 	for i, node := range g.Nodes() {
 		n := node.(*Node)
 
 		var peers, clients int
+		var peersS, clientsS []string
 		links := findLinks(i)
 		for _, link := range links {
 			var peer graph.Node
@@ -45,16 +68,25 @@ func printStats(g *graph.Graph) {
 			p := peer.(*Node)
 			if p.IsClient() {
 				clients++
+				clientsS = append(clientsS, p.ID())
 			} else {
 				peers++
+				peersS = append(peersS, p.ID())
 			}
 		}
-		if n.IsClient() {
-			fmt.Printf(" Client ")
-		} else {
-			fmt.Printf(" Peer ")
+
+		nodeStat := &NodeStats{
+			ID:         n.ID(),
+			IsClient:   n.IsClient(),
+			Peers:      peersS,
+			Clients:    clientsS,
+			PeersNum:   peers,
+			ClientsNum: clients,
 		}
-		fmt.Printf("%s - %d (%d clients, %d servers)\n", node.ID(), len(links), clients, peers)
+		ns = append(ns, nodeStat)
 	}
 
+	s.Nodes = ns
+
+	return s
 }

@@ -18,6 +18,7 @@ type WSServer struct {
 	layout    layout.Layout
 	graph     *graph.Graph
 
+	stats    *Stats
 	sshHosts []string
 }
 
@@ -33,6 +34,7 @@ type WSResponse struct {
 	Type      MsgType         `json:"type"`
 	Positions []*position     `json:"positions,omitempty"`
 	Graph     json.RawMessage `json:"graph,omitempty"`
+	Stats     *Stats          `json:"stats,omitempty"`
 }
 
 type WSRequest struct {
@@ -46,12 +48,14 @@ type WSCommand string
 const (
 	RespPositions MsgType = "positions"
 	RespGraph     MsgType = "graph"
+	RespStats     MsgType = "stats"
 )
 
 // WebSocket commands
 const (
 	CmdInit    WSCommand = "init"
 	CmdRefresh WSCommand = "refresh"
+	CmdStats   WSCommand = "stats"
 )
 
 func (ws *WSServer) Handle(w http.ResponseWriter, r *http.Request) {
@@ -89,6 +93,8 @@ func (ws *WSServer) processRequest(c *websocket.Conn, mtype int, data []byte) {
 		ws.sendPositions(c)
 	case CmdRefresh:
 		ws.refresh()
+	case CmdStats:
+		ws.sendStats(c)
 	}
 }
 
@@ -111,7 +117,6 @@ func (ws *WSServer) refresh() {
 	log.Println("Getting peers from Status-cluster via SSH")
 	processSSH(g, ws.sshHosts)
 	log.Printf("Loaded graph: %d nodes, %d links\n", len(g.Nodes()), len(g.Links()))
-	printStats(g)
 
 	log.Printf("Initializing layout...")
 	repelling := layout.NewGravityForce(-100.0, layout.BarneHutMethod)
@@ -119,7 +124,7 @@ func (ws *WSServer) refresh() {
 	drag := layout.NewDragForce(0.4, layout.ForEachNode)
 	l := layout.New(g, repelling, springs, drag)
 
-	l.CalculateN(20)
+	l.CalculateN(30)
 
 	ws.updateGraph(g, l)
 	ws.updatePositions()
