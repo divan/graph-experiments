@@ -1,12 +1,12 @@
-function NewEthereumGeometry() {
+function NewEthereumGeometry(scale) {
 	let geom = new THREE.Geometry();
 	geom.vertices.push(
-		new THREE.Vector3(  1,  0,  0 ),
-		new THREE.Vector3( -1,  0,  0 ),
-		new THREE.Vector3(  0,  1.5,  0 ),
-		new THREE.Vector3(  0, -1.5,  0 ),
-		new THREE.Vector3(  0,  0,  1 ),
-		new THREE.Vector3(  0,  0, -1 )
+		new THREE.Vector3(  scale*1,  0,  0 ),
+		new THREE.Vector3( -scale*1,  0,  0 ),
+		new THREE.Vector3(  0,  scale*1.5,  0 ),
+		new THREE.Vector3(  0, scale*-1.5,  0 ),
+		new THREE.Vector3(  0,  0,  scale*1 ),
+		new THREE.Vector3(  0,  0, -scale*1 )
 	);
 	geom.faces.push(
 		new THREE.Face3( 0, 2, 4 ),
