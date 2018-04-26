@@ -44,7 +44,20 @@
 					</div>
 				</div>
 				<hr />
-				<div><h3>Servers/clients: <span id="stats.servers"></span> / <span id="stats.clients"></span></h3></div>
+				<table class="pure-table pure-table-horizontal" width="90%">
+					<thead>
+						<tr>
+							<th>Servers: <span id="stats.servers"></span></th>
+							<th>Clients: <span id="stats.clients"></span></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td colspan="2">
+								<canvas id="servers.sparkline" width="240px" height="100px"></canvas>
+							</td>
+						</tr>
+				</table>
 				<h3>Servers:</h3>
 				<table class="pure-table pure-table-horizontal" width="90%">
 					<thead>

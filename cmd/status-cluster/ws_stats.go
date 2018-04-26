@@ -5,7 +5,7 @@ import "github.com/gorilla/websocket"
 func (ws *WSServer) sendStats(c *websocket.Conn) {
 	msg := &WSResponse{
 		Type:  RespStats,
-		Stats: makeStats(ws.graph),
+		Stats: *ws.stats.Stats(),
 	}
 
 	ws.sendMsg(c, msg)

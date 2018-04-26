@@ -1,16 +1,28 @@
 package main
 
 import (
+	"sync"
+	"time"
+
 	"github.com/divan/graph-experiments/graph"
 )
 
 type Stats struct {
+	mu sync.RWMutex
+
+	// current data
 	Clients    []string
 	ClientsNum int
 	Servers    []string
 	ServersNum int
 	LinksNum   int
 	Nodes      []*NodeStats
+	LastUpdate time.Time
+
+	// history data
+	Timestamps  []string
+	ServersHist []int
+	ClientsHist []int
 }
 
 type NodeStats struct {
@@ -22,9 +34,14 @@ type NodeStats struct {
 	IsClient   bool
 }
 
-func makeStats(g *graph.Graph) *Stats {
-	s := &Stats{}
+func (s *Stats) Stats() *Stats {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
+	return s
+}
+
+func (s *Stats) Update(g *graph.Graph) {
 	var servers, clients []string
 	for _, node := range g.Nodes() {
 		n := node.(*Node)
@@ -34,12 +51,6 @@ func makeStats(g *graph.Graph) *Stats {
 			servers = append(servers, n.ID())
 		}
 	}
-
-	s.Clients = clients
-	s.ClientsNum = len(clients)
-	s.Servers = servers
-	s.ServersNum = len(servers)
-	s.LinksNum = len(g.Links())
 
 	findLinks := func(idx int) []*graph.Link {
 		var ret []*graph.Link
@@ -86,7 +97,24 @@ func makeStats(g *graph.Graph) *Stats {
 		ns = append(ns, nodeStat)
 	}
 
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.Clients = clients
+	s.ClientsNum = len(clients)
+	s.Servers = servers
+	s.ServersNum = len(servers)
+	s.LinksNum = len(g.Links())
+
 	s.Nodes = ns
 
-	return s
+	now := time.Now()
+	s.LastUpdate = now
+
+	// update historic data
+	JavascriptISOString := "2006-01-02T15:04:05.999Z07:00"
+	jsNow := now.UTC().Format(JavascriptISOString)
+	s.Timestamps = append(s.Timestamps, jsNow)
+	s.ServersHist = append(s.ServersHist, s.ServersNum)
+	s.ClientsHist = append(s.ClientsHist, s.ClientsNum)
 }

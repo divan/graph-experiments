@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	"github.com/divan/graph-experiments/graph"
 	"github.com/ethereum/go-ethereum/p2p"
@@ -19,7 +20,7 @@ func main() {
 		"51.15.85.243:30503",
 	}
 
-	ws := NewWSServer(hosts)
+	ws := NewWSServer(hosts, 10*time.Second)
 	ws.refresh()
 
 	log.Printf("Starting web server...")

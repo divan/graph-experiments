@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/divan/graph-experiments/graph"
 	"github.com/divan/graph-experiments/layout"
@@ -22,11 +23,20 @@ type WSServer struct {
 	sshHosts []string
 }
 
-func NewWSServer(sshHosts []string) *WSServer {
+func NewWSServer(sshHosts []string, updateInterval time.Duration) *WSServer {
 	ws := &WSServer{
 		upgrader: websocket.Upgrader{},
+		stats:    &Stats{},
 		sshHosts: sshHosts,
 	}
+	go func() {
+		t := time.NewTicker(updateInterval)
+		for range t.C {
+			ws.refresh()
+			ws.stats.Update(ws.graph)
+			ws.broadcastStats()
+		}
+	}()
 	return ws
 }
 
@@ -34,7 +44,7 @@ type WSResponse struct {
 	Type      MsgType         `json:"type"`
 	Positions []*position     `json:"positions,omitempty"`
 	Graph     json.RawMessage `json:"graph,omitempty"`
-	Stats     *Stats          `json:"stats,omitempty"`
+	Stats     Stats           `json:"stats,omitempty"`
 }
 
 type WSRequest struct {
@@ -93,6 +103,7 @@ func (ws *WSServer) processRequest(c *websocket.Conn, mtype int, data []byte) {
 		ws.sendPositions(c)
 	case CmdRefresh:
 		ws.refresh()
+		ws.broadcastStats()
 	case CmdStats:
 		ws.sendStats(c)
 	}
