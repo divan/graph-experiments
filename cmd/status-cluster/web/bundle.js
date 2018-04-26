@@ -52,21 +52,6 @@ var tbControls = new THREE.TrackballControls(camera, renderer.domElement);
 var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2();
 
-function onMouseDown( event ) {
-	console.log("MouseDown", event);
-	let canvasBounds = renderer.context.canvas.getBoundingClientRect();
-    mouse.x = ( ( event.clientX - canvasBounds.left ) / ( canvasBounds.right - canvasBounds.left ) ) * 2 - 1;
-	mouse.y = - ( ( event.clientY - canvasBounds.top ) / ( canvasBounds.bottom - canvasBounds.top) ) * 2 + 1;
-
-    raycaster.setFromCamera( mouse, camera );
-
-    var intersects = raycaster.intersectObjects( scene.children, true );
-
-	for ( var i = 0; i < intersects.length; i++ ) {
-		intersects[ i ].object.material.color.set( 0xff0000 );
-	}
-}
-
 var flyControls = new THREE.FlyControls(camera, renderer.domElement);
 
 var animate = function () {
@@ -119,26 +104,24 @@ var initGraph = function () {
 	const nameAccessor = accessorFn("name");
 	const valAccessor = accessorFn("weight");
 	const colorAccessor = accessorFn("color");
-	let sphereGeometries = {}; // indexed by node value
-	let sphereMaterials = {}; // indexed by color
+	let nodeGeometries = {}; // indexed by node value
+	let nodeMaterials = []; 
 
 	autoColorNodes(graphData.nodes);
 	graphData.nodes.forEach((node, idx) => {
 		let val = valAccessor(node) || 1;
-		if (!sphereGeometries.hasOwnProperty(val)) {
-			sphereGeometries[val] = NewEthereumGeometry(val);
+		if (!nodeGeometries.hasOwnProperty(val)) {
+			nodeGeometries[val] = NewEthereumGeometry(val);
 		}
 
 		const color = colorAccessor(node);
-		if (!sphereMaterials.hasOwnProperty(color)) {
-			sphereMaterials[color] = new THREE.MeshStandardMaterial({
-				color: colorStr2Hex(color || '#00ff00'),
-				transparent: false,
-				opacity: 0.75
-			});
-		}
+		nodeMaterials[idx] = new THREE.MeshStandardMaterial({
+			color: colorStr2Hex(color || '#00ff00'),
+			transparent: false,
+			opacity: 0.75
+		});
 
-		const sphere = new THREE.Mesh(sphereGeometries[val], sphereMaterials[color]);
+		const sphere = new THREE.Mesh(nodeGeometries[val], nodeMaterials[idx]);
 
 		sphere.name = nameAccessor(node); // Add label
 		sphere.__data = node; // Attach node data
@@ -234,7 +217,75 @@ var redrawGraph = function () {
 
 animate();
 
-canvas.addEventListener( 'mousedown', onMouseDown, false );
+var INTERSECTED;
+
+function onMouseDown( event ) {
+	let canvasBounds = renderer.context.canvas.getBoundingClientRect();
+    mouse.x = ( ( event.clientX - canvasBounds.left ) / ( canvasBounds.right - canvasBounds.left ) ) * 2 - 1;
+	mouse.y = - ( ( event.clientY - canvasBounds.top ) / ( canvasBounds.bottom - canvasBounds.top) ) * 2 + 1;
+
+	raycaster.setFromCamera( mouse, camera );
+	var intersects = raycaster.intersectObjects( scene.children, true );
+
+	if (intersects.length > 0) {
+		// if the closest object intersected is not the currently stored intersection object
+		if (intersects[0].object != INTERSECTED) {
+		  // restore previous intersection object (if it exists) to its original color
+		  if (INTERSECTED)
+			INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+		  // store reference to closest object as current intersection object
+		  INTERSECTED = intersects[0].object;
+		  // store color of closest object (for later restoration)
+		  INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+		  // set a new color for closest object
+		  INTERSECTED.material.color.setHex(0xffff00);
+		}
+	  }
+}
+
+function onMouseUp(event) {
+		// restore previous intersection object (if it exists) to its original color
+		if (INTERSECTED)
+		  INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+		// remove previous intersection object reference
+		//     by setting current intersection object to "nothing"
+		INTERSECTED = null;
+}
+
+function onMouseMove( event ) {
+	let canvasBounds = renderer.context.canvas.getBoundingClientRect();
+    mouse.x = ( ( event.clientX - canvasBounds.left ) / ( canvasBounds.right - canvasBounds.left ) ) * 2 - 1;
+	mouse.y = - ( ( event.clientY - canvasBounds.top ) / ( canvasBounds.bottom - canvasBounds.top) ) * 2 + 1;
+
+	raycaster.setFromCamera( mouse, camera );
+	var intersects = raycaster.intersectObjects( scene.children, true );
+
+	if (intersects.length > 0) {
+		// if the closest object intersected is not the currently stored intersection object
+		if (intersects[0].object != INTERSECTED) {
+			// restore previous intersection object (if it exists) to its original color
+			if (INTERSECTED)
+				INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+			// store reference to closest object as current intersection object
+			INTERSECTED = intersects[0].object;
+			// store color of closest object (for later restoration)
+			INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+			// set a new color for closest object
+			INTERSECTED.material.color.setHex(0xffff00);
+		}
+	} else {
+		// restore previous intersection object (if it exists) to its original color
+		if (INTERSECTED)
+		  INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+		// remove previous intersection object reference
+		//     by setting current intersection object to "nothing"
+		INTERSECTED = null;
+	}
+}
+
+//canvas.addEventListener( 'mousedown', onMouseDown, false );
+//canvas.addEventListener( 'mouseup', onMouseUp, false );
+canvas.addEventListener( 'mousemove', onMouseMove, false );
 
 },{"./js/colors.js":2,"./js/ethereum.js":3,"./js/keys.js":4,"./js/shitty_hacks.js":5,"dat.gui":68,"stats-js":70}],2:[function(require,module,exports){
 var schemePaired = require('d3-scale-chromatic').schemePaired;
