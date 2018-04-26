@@ -133,21 +133,19 @@ var initGraph = function () {
 	});
 
 	const linkColorAccessor = accessorFn("color");
-	let lineMaterials = {}; // indexed by color
+	let lineMaterials = [];
 	console.log("Adding links", graphData.links.lengh);
-	graphData.links.forEach(link => {
+	graphData.links.forEach((link, idx) => {
 		const color = linkColorAccessor(link);
-		if (!lineMaterials.hasOwnProperty(color)) {
-			lineMaterials[color] = new THREE.LineBasicMaterial({
-				color: /*colorStr2Hex(color || '#f0f0f0')*/ '#f0f0f0',
+			lineMaterials[idx] = new THREE.LineBasicMaterial({
+				color: colorStr2Hex(color || '#f0f0f0'),
 				transparent: true,
 				opacity: 0.4,
 			});
-		}
 
 		const geometry = new THREE.BufferGeometry();
 		geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(2 * 3), 3));
-		const lineMaterial = lineMaterials[color];
+		const lineMaterial = lineMaterials[idx];
 		const line = new THREE.Line(geometry, lineMaterial);
 
 		line.renderOrder = 10; // Prevent visual glitches of dark lines on top of spheres by rendering them last
@@ -217,40 +215,8 @@ var redrawGraph = function () {
 
 animate();
 
+// Handle mouse hover
 var INTERSECTED;
-
-function onMouseDown( event ) {
-	let canvasBounds = renderer.context.canvas.getBoundingClientRect();
-    mouse.x = ( ( event.clientX - canvasBounds.left ) / ( canvasBounds.right - canvasBounds.left ) ) * 2 - 1;
-	mouse.y = - ( ( event.clientY - canvasBounds.top ) / ( canvasBounds.bottom - canvasBounds.top) ) * 2 + 1;
-
-	raycaster.setFromCamera( mouse, camera );
-	var intersects = raycaster.intersectObjects( scene.children, true );
-
-	if (intersects.length > 0) {
-		// if the closest object intersected is not the currently stored intersection object
-		if (intersects[0].object != INTERSECTED) {
-		  // restore previous intersection object (if it exists) to its original color
-		  if (INTERSECTED)
-			INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-		  // store reference to closest object as current intersection object
-		  INTERSECTED = intersects[0].object;
-		  // store color of closest object (for later restoration)
-		  INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-		  // set a new color for closest object
-		  INTERSECTED.material.color.setHex(0xffff00);
-		}
-	  }
-}
-
-function onMouseUp(event) {
-		// restore previous intersection object (if it exists) to its original color
-		if (INTERSECTED)
-		  INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-		// remove previous intersection object reference
-		//     by setting current intersection object to "nothing"
-		INTERSECTED = null;
-}
 
 function onMouseMove( event ) {
 	let canvasBounds = renderer.context.canvas.getBoundingClientRect();
@@ -283,8 +249,6 @@ function onMouseMove( event ) {
 	}
 }
 
-//canvas.addEventListener( 'mousedown', onMouseDown, false );
-//canvas.addEventListener( 'mouseup', onMouseUp, false );
 canvas.addEventListener( 'mousemove', onMouseMove, false );
 
 },{"./js/colors.js":2,"./js/ethereum.js":3,"./js/keys.js":4,"./js/shitty_hacks.js":5,"dat.gui":68,"stats-js":70}],2:[function(require,module,exports){

@@ -132,21 +132,19 @@ var initGraph = function () {
 	});
 
 	const linkColorAccessor = accessorFn("color");
-	let lineMaterials = {}; // indexed by color
+	let lineMaterials = [];
 	console.log("Adding links", graphData.links.lengh);
-	graphData.links.forEach(link => {
+	graphData.links.forEach((link, idx) => {
 		const color = linkColorAccessor(link);
-		if (!lineMaterials.hasOwnProperty(color)) {
-			lineMaterials[color] = new THREE.LineBasicMaterial({
-				color: /*colorStr2Hex(color || '#f0f0f0')*/ '#f0f0f0',
+			lineMaterials[idx] = new THREE.LineBasicMaterial({
+				color: colorStr2Hex(color || '#f0f0f0'),
 				transparent: true,
 				opacity: 0.4,
 			});
-		}
 
 		const geometry = new THREE.BufferGeometry();
 		geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(2 * 3), 3));
-		const lineMaterial = lineMaterials[color];
+		const lineMaterial = lineMaterials[idx];
 		const line = new THREE.Line(geometry, lineMaterial);
 
 		line.renderOrder = 10; // Prevent visual glitches of dark lines on top of spheres by rendering them last
