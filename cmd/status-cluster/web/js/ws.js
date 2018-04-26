@@ -26,16 +26,4 @@ ws.onmessage = function (event) {
 	}
 }
 
-// refresh restarts propagation animation.
-function refresh() {
-    ws.send('{"cmd": "refresh"}');
-}
-// js functions after browserify cannot be accessed from html,
-// so instead of using onclick="refresh()" we need to attach listener
-// here.
-// Did I already say that whole frontend ecosystem is a one giant
-// museum of hacks for hacks on top of hacks?
-var refreshButton = document.getElementById('refreshButton');
-refreshButton.addEventListener('click', refresh);
-
 module.exports = { ws };
