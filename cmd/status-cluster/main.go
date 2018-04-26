@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	port := flag.String("port", "20002", "Port to bind server to")
 	flag.Parse()
 
 	hosts := []string{
@@ -24,7 +25,7 @@ func main() {
 	ws.refresh()
 
 	log.Printf("Starting web server...")
-	startWeb(ws)
+	startWeb(ws, *port)
 	select {}
 }
 

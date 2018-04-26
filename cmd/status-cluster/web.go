@@ -9,15 +9,14 @@ import (
 	"runtime"
 )
 
-func startWeb(ws *WSServer) {
-	port := ":20002"
+func startWeb(ws *WSServer, port string) {
 	go func() {
 		fs := http.FileServer(http.Dir("web"))
 		http.Handle("/", noCacheMiddleware(fs))
 		http.HandleFunc("/ws", ws.Handle)
-		log.Fatal(http.ListenAndServe(port, nil))
+		log.Fatal(http.ListenAndServe(":"+port, nil))
 	}()
-	url := "http://localhost" + port
+	url := "http://localhost:" + port
 	fmt.Println("Please go to this url:", url)
 	/*
 		time.Sleep(1 * time.Second)
