@@ -11,6 +11,7 @@ import (
 
 func main() {
 	port := flag.String("port", "20002", "Port to bind server to")
+	updateInterval := flag.Duration("update", 10*time.Second, "Interval for SSH updates")
 	flag.Parse()
 
 	hosts := []string{
@@ -21,7 +22,7 @@ func main() {
 		"51.15.85.243:30503",
 	}
 
-	ws := NewWSServer(hosts, 10*time.Second)
+	ws := NewWSServer(hosts, *updateInterval)
 	ws.refresh()
 
 	log.Printf("Starting web server...")
