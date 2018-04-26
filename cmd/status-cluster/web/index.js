@@ -34,7 +34,7 @@ scene.background = new THREE.Color(0x000011);
 
 // Add lights
 scene.add(new THREE.AmbientLight(0xbbbbbb));
-scene.add(new THREE.DirectionalLight(0xffffff, 0.6));
+scene.add(new THREE.DirectionalLight(0xffffff, 1.6));
 
 var linksGroup = new THREE.Group();
 scene.add(linksGroup);
@@ -46,9 +46,31 @@ var camera = new THREE.PerspectiveCamera();
 camera.far = 20000;
 
 var tbControls = new THREE.TrackballControls(camera, renderer.domElement);
+
+// Raycasting
+var raycaster = new THREE.Raycaster();
+var mouse = new THREE.Vector2();
+
+function onMouseDown( event ) {
+	let canvasBounds = renderer.context.canvas.getBoundingClientRect();
+    mouse.x = ( ( event.clientX - canvasBounds.left ) / ( canvasBounds.right - canvasBounds.left ) ) * 2 - 1;
+	mouse.y = - ( ( event.clientY - canvasBounds.top ) / ( canvasBounds.bottom - canvasBounds.top) ) * 2 + 1;
+
+    raycaster.setFromCamera( mouse, camera );
+
+    var intersects = raycaster.intersectObjects( scene.children, true );
+
+	for ( var i = 0; i < intersects.length; i++ ) {
+		intersects[ i ].object.material.color.set( 0xff0000 );
+	}
+}
+
 var flyControls = new THREE.FlyControls(camera, renderer.domElement);
 
 var animate = function () {
+	nodesGroup.rotation.y += 0.001;
+	linksGroup.rotation.y += 0.001;
+
 	// frame cycle
 	tbControls.update();
 	flyControls.update(1);
@@ -210,3 +232,4 @@ var redrawGraph = function () {
 
 animate();
 
+canvas.addEventListener( 'mousedown', onMouseDown, false );

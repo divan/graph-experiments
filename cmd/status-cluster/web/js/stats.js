@@ -43,7 +43,7 @@ function update(s) {
     clientsDiv.innerHTML = stats.ClientsNum;
 
     // graphs
-    serversChart.data.labels = stats.Timestamps;
+    serversChart.data.labels = stats.Timestamps ? stats.Timestamps : [];
     serversChart.data.datasets[0].data = stats.ServersHist;
     serversChart.data.datasets[1].data = stats.ClientsHist;
     serversChart.update();
