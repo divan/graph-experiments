@@ -239,7 +239,9 @@ function onMouseMove( event ) {
 			// store reference to closest object as current intersection object
 			
 			// find the object representing node (has __data.id field)
-			INTERSECTED = intersects.filter(x => x.object.__data !== undefined)[0].object;
+			let obj = intersects.filter(x => x.object.__data !== undefined);
+			if (obj.length == 0) { return }
+			INTERSECTED = obj[0].object;
 			if (INTERSECTED.__data !== undefined) {
 				let id = INTERSECTED.__data.id;
 				nodeInfo.hidden = false;
