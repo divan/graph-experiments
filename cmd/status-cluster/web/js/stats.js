@@ -70,4 +70,8 @@ function update(s) {
     lastUpdatedEl.innerHTML = new Date(stats.LastUpdate).toLocaleTimeString();
 }
 
-module.exports = { update };
+function current() {
+    return stats;
+}
+
+module.exports = { update, current };

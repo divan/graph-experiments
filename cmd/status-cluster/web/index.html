@@ -28,6 +28,19 @@
 					background: rgb(202, 60, 60);
 					color: white;
 				}
+
+				.nodeBlock {
+					background: transparent;
+
+					width: 300px;
+					height: 200px;
+					position: absolute;
+					left: 270px;
+					top: 10px;
+					word-wrap: break-word;
+					word-break: break-all;
+					color: white;
+				}
 		</style>
 	</head>
 	<body>
@@ -68,27 +81,18 @@
 					</thead>
 				
 					<tbody id="servers.table">
-						<tr>
-							<td>123456</td>
-							<td>4</td>
-							<td>2</td>
-						</tr>
-				
-						<tr>
-							<td>654321</td>
-							<td>3</td>
-							<td>4</td>
-						</tr>
-				
-						<tr>
-							<td>781839</td>
-							<td>4</td>
-							<td>6</td>
-						</tr>
 					</tbody>
 				</table>
 			</div>
 			<div class="pure-u-4-5">
+				<div id="nodeInfo" class="nodeBlock" hidden="true">
+					<p>
+						<b>Node:</b> <span id="selectedNodeID"></span>
+					</p>
+					<p>
+						<b>Peers:</b> <span id="selectedPeersCount"></span>
+					</p>
+				</div>
 				<canvas id="preview"></canvas>
 			</div>
 		</div>

@@ -7,6 +7,7 @@ var { NewEthereumGeometry } = require('./js/ethereum.js');
 var Stats = require('stats-js');
 const dat = require('dat.gui');
 
+var { current } = require('./js/stats.js');
 
 // WebGL
 let canvas = document.getElementById("preview");
@@ -226,6 +227,9 @@ function onMouseMove( event ) {
 	raycaster.setFromCamera( mouse, camera );
 	var intersects = raycaster.intersectObjects( scene.children, true );
 
+    let nodeInfo = document.getElementById('nodeInfo');
+    let nodeID = document.getElementById('selectedNodeID');
+    let peersCount = document.getElementById('selectedPeersCount');
 	if (intersects.length > 0) {
 		// if the closest object intersected is not the currently stored intersection object
 		if (intersects[0].object != INTERSECTED) {
@@ -233,7 +237,18 @@ function onMouseMove( event ) {
 			if (INTERSECTED)
 				INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
 			// store reference to closest object as current intersection object
-			INTERSECTED = intersects[0].object;
+			
+			// find the object representing node (has __data.id field)
+			INTERSECTED = intersects.filter(x => x.object.__data !== undefined)[0].object;
+			if (INTERSECTED.__data !== undefined) {
+				let id = INTERSECTED.__data.id;
+				nodeInfo.hidden = false;
+				nodeID.innerHTML = id;
+				let stats = current();
+				let nodeStats = stats.Nodes.filter(x => x.ID == id)[0];
+				let count = nodeStats.ClientsNum + nodeStats.PeersNum;
+				peersCount.innerHTML = count;
+			}
 			// store color of closest object (for later restoration)
 			INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
 			// set a new color for closest object
@@ -246,12 +261,13 @@ function onMouseMove( event ) {
 		// remove previous intersection object reference
 		//     by setting current intersection object to "nothing"
 		INTERSECTED = null;
+		nodeInfo.hidden = true;
 	}
 }
 
 canvas.addEventListener( 'mousemove', onMouseMove, false );
 
-},{"./js/colors.js":2,"./js/ethereum.js":3,"./js/keys.js":4,"./js/shitty_hacks.js":5,"dat.gui":68,"stats-js":70}],2:[function(require,module,exports){
+},{"./js/colors.js":2,"./js/ethereum.js":3,"./js/keys.js":4,"./js/shitty_hacks.js":5,"./js/stats.js":6,"dat.gui":68,"stats-js":70}],2:[function(require,module,exports){
 var schemePaired = require('d3-scale-chromatic').schemePaired;
 var tinyColor = require('tinycolor2');
 
@@ -398,7 +414,11 @@ function update(s) {
     lastUpdatedEl.innerHTML = new Date(stats.LastUpdate).toLocaleTimeString();
 }
 
-module.exports = { update };
+function current() {
+    return stats;
+}
+
+module.exports = { update, current };
 
 },{"chart.js":8}],7:[function(require,module,exports){
 var graph = require('../index.js');
