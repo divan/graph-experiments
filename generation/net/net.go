@@ -1,8 +1,10 @@
 package net
 
 import (
-	"github.com/divan/graph-experiments/graph"
+	"errors"
 	"math/rand"
+
+	"github.com/divan/graph-experiments/graph"
 )
 
 // DummyGenerator implements dummy network generator,
@@ -68,8 +70,10 @@ func (d *DummyGenerator) Generate() *graph.Graph {
 	// generate links
 	for i := 0; i < d.hosts; i++ {
 		for j := 0; j < d.conns(); j++ {
-			idx := d.nextIdx(g, i)
-			g.AddLink(i, idx)
+			idx, err := d.nextIdx(g, i)
+			if err == nil {
+				g.AddLink(i, idx)
+			}
 		}
 	}
 
@@ -98,14 +102,17 @@ func (d *DummyGenerator) conns() int {
 // to minimize the probability of choosing the existing link
 // (it doesn't guarantee, but it's cheap).
 // TODO: make it more efficient and faster
-func (d *DummyGenerator) nextIdx(g *graph.Graph, i int) int {
+func (d *DummyGenerator) nextIdx(g *graph.Graph, i int) (int, error) {
 	// use uniform distribution for now
 	idx := rand.Intn(d.hosts - 1)
 	if idx == i || g.LinkExists(idx, i) {
 		idx = rand.Intn(d.hosts - 1)
 		if idx == i || g.LinkExists(idx, i) {
 			idx = rand.Intn(d.hosts - 1)
+			if idx == i || g.LinkExists(idx, i) {
+				return 0, errors.New("too many colissions")
+			}
 		}
 	}
-	return idx
+	return idx, nil
 }
