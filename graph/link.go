@@ -22,6 +22,7 @@ func NewLink(from, to int) *Link {
 // AddLink adds new link to the graph and validates input
 // indices.
 func (g *Graph) AddLink(from, to int) error {
+	fmt.Println("AddLink", from, to)
 	if from > len(g.nodes) {
 		return fmt.Errorf("Node not found: %v", from)
 	}

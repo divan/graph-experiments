@@ -13,7 +13,7 @@ import (
 
 func main() {
 	var (
-		genType = flag.String("type", "net", "Generator type (net, line, circle, grid, grid3d, small-world)")
+		genType = flag.String("type", "net", "Generator type (net, line, circle, grid, grid3d, small-world, king)")
 		nodes   = flag.Int("n", 20, "Number of nodes")
 		conns   = flag.Int("conns", 4, "Number of connections between hosts for net generator")
 		output  = flag.String("o", "network.json", "Output filename for network data")
@@ -45,6 +45,8 @@ func main() {
 		gen = basic.NewGrid3DGeneratorN(*nodes)
 	case "small-world":
 		gen = basic.NewWattsStrogatzGenerator(*nodes, *conns)
+	case "king":
+		gen = basic.NewKingGeneratorN(*nodes)
 	}
 
 	log.Printf("Generating %s graph with %d nodes...\n", *genType, *nodes)

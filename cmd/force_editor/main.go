@@ -18,9 +18,9 @@ func main() {
 	log.Printf("Loaded graph: %d nodes, %d links\n", len(data.Nodes()), len(data.Links()))
 
 	log.Printf("Initializing layout...")
-	repelling := layout.NewGravityForce(-200.0, layout.BarneHutMethod)
-	springs := layout.NewSpringForce(0.01, 5.0, layout.ForEachLink)
-	drag := layout.NewDragForce(0.4, layout.ForEachNode)
+	repelling := layout.NewGravityForce(-500.0, layout.BarneHutMethod)
+	springs := layout.NewSpringForce(0.1, 10.0, layout.ForEachLink)
+	drag := layout.NewDragForce(0.3, layout.ForEachNode)
 	layout3D := layout.NewWithDebug(data, repelling, springs, drag)
 
 	ws := NewWSServer(layout3D)

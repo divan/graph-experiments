@@ -110,7 +110,7 @@ var initGraph = function () {
 			lineMaterials[color] = new THREE.LineBasicMaterial({
 				color: /*colorStr2Hex(color || '#f0f0f0')*/ '#f0f0f0',
 				transparent: true,
-				opacity: 0.2,
+				opacity: 0.9,
 			});
 		}
 
