@@ -4,5 +4,7 @@ This repo contains libraries and tools for experiments with force-directed graph
 
 Status: alpha
 
+Don't rely on current API, I'll break it very soon.
+
 # License
 MIT
