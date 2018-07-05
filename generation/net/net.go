@@ -7,19 +7,19 @@ import (
 	"github.com/divan/graph-experiments/graph"
 )
 
-// DummyGenerator implements dummy network generator,
+// NetGenerator implements dummy network generator,
 // where network consits from N hosts, with M connections
 // each. Nodes are represented as IPv4 addresses.
-type DummyGenerator struct {
+type NetGenerator struct {
 	hosts        int
 	connections  int
 	startIP      string
 	distribution ConnectionsDistribution
 }
 
-// NewDummyGenerator creates new dummy network generator with given parameters.
-func NewDummyGenerator(hosts, conns int, startIP string, distribution ConnectionsDistribution) *DummyGenerator {
-	return &DummyGenerator{
+// NewNetGenerator creates new dummy network generator with given parameters.
+func NewNetGenerator(hosts, conns int, startIP string, distribution ConnectionsDistribution) *NetGenerator {
+	return &NetGenerator{
 		hosts:        hosts,
 		connections:  conns,
 		startIP:      startIP,
@@ -37,6 +37,7 @@ const (
 	Uniform
 )
 
+// Node implements graph.Node for IPv4 hosts.
 type Node struct {
 	IP string `json:"id"`
 }
@@ -56,7 +57,7 @@ func (n *Node) ID() string {
 // Generate generates dummy network with known number of
 // hosts with known number of connections each. Implements Generator
 // interface.
-func (d *DummyGenerator) Generate() *graph.Graph {
+func (d *NetGenerator) Generate() *graph.Graph {
 	g := graph.NewGraph()
 
 	// generate hosts
@@ -70,7 +71,7 @@ func (d *DummyGenerator) Generate() *graph.Graph {
 	// generate links
 	for i := 0; i < d.hosts; i++ {
 		for j := 0; j < d.conns(); j++ {
-			idx, err := d.nextIdx(g, i)
+			idx, err := nextIdx(g, i, 0, d.hosts)
 			if err == nil {
 				g.AddLink(i, idx)
 			}
@@ -82,7 +83,7 @@ func (d *DummyGenerator) Generate() *graph.Graph {
 
 // conns return the number of connections based on the
 // actual distrubtion.
-func (d *DummyGenerator) conns() int {
+func (d *NetGenerator) conns() int {
 	switch d.distribution {
 	case Uniform:
 		n := rand.Intn(d.connections)
@@ -102,13 +103,13 @@ func (d *DummyGenerator) conns() int {
 // to minimize the probability of choosing the existing link
 // (it doesn't guarantee, but it's cheap).
 // TODO: make it more efficient and faster
-func (d *DummyGenerator) nextIdx(g *graph.Graph, i int) (int, error) {
+func nextIdx(g *graph.Graph, i, start, hosts int) (int, error) {
 	// use uniform distribution for now
-	idx := rand.Intn(d.hosts - 1)
+	idx := start + rand.Intn(hosts-start-1)
 	if idx == i || g.LinkExists(idx, i) {
-		idx = rand.Intn(d.hosts - 1)
+		idx = start + rand.Intn(hosts-start-1)
 		if idx == i || g.LinkExists(idx, i) {
-			idx = rand.Intn(d.hosts - 1)
+			idx = start + rand.Intn(hosts-start-1)
 			if idx == i || g.LinkExists(idx, i) {
 				return 0, errors.New("too many colissions")
 			}

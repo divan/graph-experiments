@@ -13,7 +13,7 @@ import (
 
 func main() {
 	var (
-		genType = flag.String("type", "net", "Generator type (net, line, circle, grid, grid3d, small-world, king)")
+		genType = flag.String("type", "net", "Generator type (net, split-brain, line, circle, grid, grid3d, small-world, king)")
 		nodes   = flag.Int("n", 20, "Number of nodes")
 		conns   = flag.Int("conns", 4, "Number of connections between hosts for net generator")
 		output  = flag.String("o", "network.json", "Output filename for network data")
@@ -34,7 +34,9 @@ func main() {
 	var gen generation.GraphGenerator
 	switch *genType {
 	case "net":
-		gen = net.NewDummyGenerator(*nodes, *conns, "192.168.1.1", net.Exact)
+		gen = net.NewNetGenerator(*nodes, *conns, "192.168.1.1", net.Exact)
+	case "split-brain":
+		gen = net.NewSplitBrainGenerator(*nodes, *conns, "192.168.1.1")
 	case "line":
 		gen = basic.NewLineGenerator(*nodes)
 	case "circle":
